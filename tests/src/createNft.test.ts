@@ -1,5 +1,5 @@
 import { createCollection } from './util/createCollection';
-import { mintNFT } from './util/mintNFT';
+import { mintNft } from './util/mintNft';
 
 describe("Integration test: mint new NFT", () => {
     const alice = '//Alice';
@@ -20,6 +20,6 @@ describe("Integration test: mint new NFT", () => {
             collectionSymbol
         );
 
-        mintNFT(alice, owner, collectionId, recipientUri, royalty, nftMetadata);
+        mintNft(alice, owner, collectionId, recipientUri, royalty, nftMetadata);
     });
 });

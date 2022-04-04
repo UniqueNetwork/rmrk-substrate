@@ -9,7 +9,7 @@ import { getNft } from './getNft';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-export async function mintNFT(
+export async function mintNft(
     issuerUri: string,
     ownerUri: string,
     collectionId: number,
