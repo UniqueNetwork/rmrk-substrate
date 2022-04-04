@@ -10,11 +10,6 @@ import {extractRmrkCoreTxResult} from './txResult';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-interface CreateCollectionResult {
-    success: boolean;
-    collectionId: number;
-}
-
 export async function createCollection(
   issuerUri: string,
   metadata: string,
