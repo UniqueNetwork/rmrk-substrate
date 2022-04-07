@@ -3,5 +3,5 @@ import type { Option } from '@polkadot/types-codec';
 import type {RmrkTraitsNftNftInfo as Nft} from '@polkadot/types/lookup';
 
 export async function getNft(api: ApiPromise, collectionId: number, nftId: number): Promise<Option<Nft>> {
-    return (await api.query.rmrkCore.nfts(collectionId, nftId));
+    return api.query.rmrkCore.nfts(collectionId, nftId);
 }
