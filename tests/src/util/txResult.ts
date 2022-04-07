@@ -35,3 +35,11 @@ export function extractRmrkCoreTxResult<T>(
 ): TxResult<T> {
     return extractTxResult(events, 'rmrkCore', expectMethod, extractAction);
 }
+
+export function extractRmrkEquipTxResult<T>(
+    events: EventRecord[],
+    expectMethod: string,
+    extractAction: (data: GenericEventData) => T
+): TxResult<T> {
+    return extractTxResult(events, 'rmrkEquip', expectMethod, extractAction);
+}
