@@ -54,5 +54,5 @@ export async function createCollection(
         expect(collection.issuer.toString()).to.be.equal(issuer.address, "Error: Invalid NFT collection issuer");
     });
 
-    return 0;
+    return collectionId;
 }
