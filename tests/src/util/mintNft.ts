@@ -64,9 +64,9 @@ export async function mintNft(
 
         expect(nft.owner.isAccountId).to.be.true;
         expect(nft.owner.asAccountId.toString()).to.be.equal(owner, "Error: Invalid NFT owner");
-        expect(nft.recipient).to.be.equal(nft.owner.asAccountId, "Error: Invalid NFT's default recipient");
+        expect(nft.recipient.eq(nft.owner.asAccountId)).to.be.true;
         expect(nft.royalty.toNumber()).to.be.equal(0, "Error: Invalid NFT's default royalty");
-        expect(nft.metadata.toString()).to.be.equal(metadata, "Error: Invalid NFT metadata");
+        expect(nft.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT metadata");
     });
 
     return nftId;
