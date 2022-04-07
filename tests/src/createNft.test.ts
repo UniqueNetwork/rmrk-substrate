@@ -20,6 +20,6 @@ describe("Integration test: mint new NFT", () => {
             collectionSymbol
         );
 
-        mintNft(alice, owner, collectionId, recipientUri, royalty, nftMetadata);
+        await mintNft(alice, owner, collectionId, recipientUri, royalty, nftMetadata);
     });
 });
