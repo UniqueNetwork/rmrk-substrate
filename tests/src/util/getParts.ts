@@ -1,5 +1,4 @@
 import {ApiPromise} from '@polkadot/api';
-import type { Option, Vec } from '@polkadot/types-codec';
 import type {RmrkTraitsPartPartType as PartType} from '@polkadot/types/lookup';
 
 export async function getParts(api: ApiPromise, baseId: number): Promise<PartType[]> {
