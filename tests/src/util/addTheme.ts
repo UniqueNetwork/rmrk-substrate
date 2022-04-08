@@ -29,3 +29,17 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
         expect(value).to.be.equal(property.value, "Error: Invalid Theme value");
     });
 }
+
+// export async function addThemeFailure(
+//     api: ApiPromise,
+//     expectedError: RegExp,
+//     issuerUri: string,
+//     baseId: number,
+//     themeObj: object
+// ) {
+//     const issuer = privateKey(issuerUri);
+//     const theme = api.createType('RmrkTraitsTheme', themeObj) as Theme;
+
+//     const tx = api.tx.rmrkEquip.themeAdd(baseId, theme);
+//     await expect(executeTransaction(api, issuer, tx)).to.be.rejectedWith(expectedError);
+// }

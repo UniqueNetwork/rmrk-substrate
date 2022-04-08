@@ -1,5 +1,6 @@
 import type {EventRecord} from '@polkadot/types/interfaces';
 import type {GenericEventData} from '@polkadot/types';
+import { expect } from 'chai';
 
 interface TxResult<T> {
     success: boolean;
@@ -16,6 +17,10 @@ export function isTxResultSuccess(events: EventRecord[]): boolean {
     });
 
     return success;
+}
+
+export async function expectTxFailure(expectedError: RegExp, promise: Promise<any>) {
+    await expect(promise).to.be.rejectedWith(expectedError);
 }
 
 export function extractTxResult<T>(
