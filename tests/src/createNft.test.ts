@@ -1,7 +1,11 @@
+import { getApiConnection } from './substrate/substrate-api';
 import { createCollection } from './util/createCollection';
 import { mintNft } from './util/mintNft';
 
 describe("Integration test: mint new NFT", () => {
+    let api: any;
+    before(async () => { api = await getApiConnection(); });
+
     const alice = '//Alice';
 
     it("Mint NFT", async () => {
@@ -14,12 +18,23 @@ describe("Integration test: mint new NFT", () => {
         const nftMetadata = 'NFT-test-metadata';
 
         let collectionId = await createCollection(
+            api,
             alice,
             collectionMetadata,
             collectionMax,
             collectionSymbol
         );
 
-        await mintNft(alice, owner, collectionId, recipientUri, royalty, nftMetadata);
+        await mintNft(
+            api,
+            alice,
+            owner,
+            collectionId,
+            recipientUri,
+            royalty,
+            nftMetadata
+        );
     });
+
+    after(() => { api.disconnect(); });
 });

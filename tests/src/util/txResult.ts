@@ -6,6 +6,18 @@ interface TxResult<T> {
     successData: T | null;
 }
 
+export function isTxResultSuccess(events: EventRecord[]): boolean {
+    let success = false;
+
+    events.forEach(({event: {data, method, section}}) => {
+        if (method == 'ExtrinsicSuccess') {
+            success = true;
+        }
+    });
+
+    return success;
+}
+
 export function extractTxResult<T>(
     events: EventRecord[],
     expectSection: string,

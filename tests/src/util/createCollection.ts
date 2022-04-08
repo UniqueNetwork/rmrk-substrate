@@ -6,11 +6,13 @@ import chai from 'chai';
 import { getCollectionsCount } from './getCollectionsCount';
 import { getCollection } from './getCollection';
 import {extractRmrkCoreTxResult} from './txResult';
+import { ApiPromise } from '@polkadot/api';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 export async function createCollection(
+  api: ApiPromise,
   issuerUri: string,
   metadata: string,
   max: number | null,
@@ -18,41 +20,39 @@ export async function createCollection(
 ): Promise<number> {
     let collectionId = 0;
 
-    await usingApi(async (api) => {
-        const oldCollectionCount = await getCollectionsCount(api);
-        const maxOptional = max ? max.toString() : null;
+    const oldCollectionCount = await getCollectionsCount(api);
+    const maxOptional = max ? max.toString() : null;
 
-        const issuer = privateKey(issuerUri);
-        const tx = api.tx.rmrkCore.createCollection(metadata, maxOptional, symbol);
-        const events = await executeTransaction(api, issuer, tx);
+    const issuer = privateKey(issuerUri);
+    const tx = api.tx.rmrkCore.createCollection(metadata, maxOptional, symbol);
+    const events = await executeTransaction(api, issuer, tx);
 
-        const collectionResult = extractRmrkCoreTxResult(
-          events, 'CollectionCreated', (data) => {
-            return parseInt(data[1].toString(), 10)
-          }
-        );
-        expect(collectionResult.success).to.be.true;
+    const collectionResult = extractRmrkCoreTxResult(
+      events, 'CollectionCreated', (data) => {
+        return parseInt(data[1].toString(), 10)
+      }
+    );
+    expect(collectionResult.success).to.be.true;
 
-        collectionId = collectionResult.successData ?? 0;
+    collectionId = collectionResult.successData ?? 0;
 
-        const newCollectionCount = await getCollectionsCount(api);
-        const collectionOption = await getCollection(api, collectionId);
+    const newCollectionCount = await getCollectionsCount(api);
+    const collectionOption = await getCollection(api, collectionId);
 
-        expect(newCollectionCount).to.be.equal(oldCollectionCount + 1, 'Error: NFT collection is NOT created');
-        expect(collectionOption.isSome).to.be.true;
+    expect(newCollectionCount).to.be.equal(oldCollectionCount + 1, 'Error: NFT collection is NOT created');
+    expect(collectionOption.isSome).to.be.true;
 
-        const collection = collectionOption.unwrap();
+    const collection = collectionOption.unwrap();
 
-        expect(collection.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT collection metadata");
-        expect(collection.max.isSome).to.be.equal(max !== null);
+    expect(collection.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT collection metadata");
+    expect(collection.max.isSome).to.be.equal(max !== null);
 
-        if (collection.max.isSome) {
-          expect(collection.max.unwrap().toNumber()).to.be.equal(max, "Error: Invalid NFT collection max");
-        }
-        expect(collection.symbol.toUtf8()).to.be.equal(symbol, "Error: Invalid NFT collection's symbol");
-        expect(collection.nftsCount.toNumber()).to.be.equal(0, "Error: NFT collection shoudn't have any tokens");
-        expect(collection.issuer.toString()).to.be.equal(issuer.address, "Error: Invalid NFT collection issuer");
-    });
+    if (collection.max.isSome) {
+      expect(collection.max.unwrap().toNumber()).to.be.equal(max, "Error: Invalid NFT collection max");
+    }
+    expect(collection.symbol.toUtf8()).to.be.equal(symbol, "Error: Invalid NFT collection's symbol");
+    expect(collection.nftsCount.toNumber()).to.be.equal(0, "Error: NFT collection shoudn't have any tokens");
+    expect(collection.issuer.toString()).to.be.equal(issuer.address, "Error: Invalid NFT collection issuer");
 
     return collectionId;
 }
