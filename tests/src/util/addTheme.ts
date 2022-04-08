@@ -20,7 +20,7 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
     expect(isTxResultSuccess(events)).to.be.true;
 
     theme.properties.forEach(async (property) => {
-        const valueOptional = await api.query.rmrkEquip.themes(baseId, theme.name, property.key);
+        const valueOptional = await getThemeValue(api, baseId, theme.name, property.key);
 
         expect(valueOptional.isSome).to.be.true;
 

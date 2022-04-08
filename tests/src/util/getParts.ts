@@ -1,4 +1,5 @@
 import {ApiPromise} from '@polkadot/api';
+import { Option } from '@polkadot/types/codec';
 import type {RmrkTraitsPartPartType as PartType} from '@polkadot/types/lookup';
 
 export async function getParts(api: ApiPromise, baseId: number): Promise<PartType[]> {
@@ -6,7 +7,7 @@ export async function getParts(api: ApiPromise, baseId: number): Promise<PartTyp
 
     return await Promise.all(
         (await equipApi.parts.keys(baseId)).map(async ({args: [_, partId]}) => {
-            return (await equipApi.parts(baseId, partId)).unwrap()
+            return ((await equipApi.parts(baseId, partId)) as Option<PartType>).unwrap()
         })
     );
 }
