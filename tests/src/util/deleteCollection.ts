@@ -30,10 +30,7 @@ export async function deleteCollection(
     );
     expect(collectionTxResult.success).to.be.true;
 
-    const collection = await getCollection(
-      api,
-      parseInt(collectionId, 10)
-    );
+    const collection = await getCollection(api, parseInt(collectionId, 10));
     expect(collection.isEmpty).to.be.true;
   });
 
@@ -47,7 +44,7 @@ export async function negativeDeleteCollection(
   await usingApi(async (api) => {
     const issuer = privateKey(issuerUri);
     const tx = api.tx.rmrkCore.destroyCollection(collectionId);
-    expect(executeTransaction(api, issuer, tx)).to.be.rejected;
+    return executeTransaction(api, issuer, tx);
   });
 
   return 0;
