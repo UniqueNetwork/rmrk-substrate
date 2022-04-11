@@ -5,6 +5,7 @@ import { executeTransaction } from "../substrate/substrate-api";
 import { extractRmrkCoreTxResult } from "./txResult";
 import { expect } from "chai";
 import { getNft, getPendingNft } from "./getNft";
+import { makeGeneralNftOwner, Nft } from "./makeGeneralNftOwner";
 
 export async function sendNft(
     api: ApiPromise,
@@ -12,17 +13,10 @@ export async function sendNft(
     originalOwnerUri: string,
     collectionId: number,
     nftId: number,
-    newOwner: string | [number, number]
+    newOwner: string | Nft
 ) {
     const originalOwner = privateKey(originalOwnerUri);
-    const isNftSenting = (typeof newOwner !== "string");
-    const newOwnerObj: NftOwner = isNftSenting
-                      ? api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
-                          "CollectionAndNftTuple": newOwner
-                        })
-                      : api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
-                          "AccountId": privateKey(newOwner).address
-                        });
+    const newOwnerObj = makeGeneralNftOwner(api, newOwner);
 
     const nftBeforeSendingOpt = await api.query.rmrkCore.nfts(collectionId, nftId);
 
