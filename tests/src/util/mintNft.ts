@@ -6,6 +6,7 @@ import {extractRmrkCoreTxResult} from './txResult';
 import { getCollection } from './getCollection';
 import { getNft } from './getNft';
 import { ApiPromise } from '@polkadot/api';
+import { isNftOwnedByAccount } from './isNftOwnedByAccount';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -15,9 +16,9 @@ export async function mintNft(
     issuerUri: string,
     ownerUri: string,
     collectionId: number,
-    recipientUri: string | null,
-    royalty: number | null,
-    metadata: string
+    metadata: string,
+    recipientUri: string | null = null,
+    royalty: number | null = null
 ): Promise<number> {
     let nftId = 0;
 
@@ -63,10 +64,19 @@ export async function mintNft(
 
     const nft = nftOption.unwrap();
 
+    // FIXME the ownership is the uniques responsibility
+    // so the `owner` field should be removed from the NFT info.
     expect(nft.owner.isAccountId).to.be.true;
     expect(nft.owner.asAccountId.toString()).to.be.equal(owner, "Error: Invalid NFT owner");
-    expect(nft.recipient.eq(nft.owner.asAccountId)).to.be.true;
-    expect(nft.royalty.toNumber()).to.be.equal(0, "Error: Invalid NFT's default royalty");
+
+    // expect(await isNftOwnedByAccount(api, owner, collectionId, nftId)).to.be.true;
+
+    if (recipient === null) {
+        expect(nft.recipient.eq(nft.owner.asAccountId)).to.be.true;
+    } else {
+        expect(nft.recipient.eq(recipient)).to.be.true;
+    }
+    expect(nft.royalty.toNumber()).to.be.equal(royalty ?? 0, "Error: Invalid NFT's royalty");
     expect(nft.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT metadata");
 
     return nftId;

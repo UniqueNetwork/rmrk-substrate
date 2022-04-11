@@ -30,9 +30,9 @@ describe("Integration test: mint new NFT", () => {
             alice,
             owner,
             collectionId,
+            nftMetadata,
             recipientUri,
-            royalty,
-            nftMetadata
+            royalty
         );
     });
 
