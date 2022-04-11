@@ -7,6 +7,7 @@ describe("Integration test: mint new NFT", () => {
     before(async () => { api = await getApiConnection(); });
 
     const alice = '//Alice';
+    const bob = '//Bob';
 
     it("Mint NFT", async () => {
         const owner = alice;
@@ -16,6 +17,34 @@ describe("Integration test: mint new NFT", () => {
         const recipientUri = null;
         const royalty = null;
         const nftMetadata = 'NFT-test-metadata';
+
+        let collectionId = await createCollection(
+            api,
+            alice,
+            collectionMetadata,
+            collectionMax,
+            collectionSymbol
+        );
+
+        await mintNft(
+            api,
+            alice,
+            owner,
+            collectionId,
+            nftMetadata,
+            recipientUri,
+            royalty
+        );
+    });
+
+    it("Mint NFT and set another owner", async () => {
+        const owner = bob;
+        const collectionMetadata = 'setOwnerCollectionMetadata';
+        const collectionMax = null;
+        const collectionSymbol = 'setOwnerCollectionSymbol';
+        const recipientUri = null;
+        const royalty = null;
+        const nftMetadata = 'setOwner-NFT-metadata';
 
         let collectionId = await createCollection(
             api,
