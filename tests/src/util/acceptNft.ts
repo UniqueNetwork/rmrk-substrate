@@ -14,15 +14,6 @@ export async function acceptNft(
     nftId: number,
     newOwner: string | [number, number]
 ) {
-    /*
-     NFTAccepted {
-			sender: T::AccountId,
-			recipient: AccountIdOrCollectionNftTuple<T::AccountId>,
-			collection_id: CollectionId,
-			nft_id: NftId,
-		},
-     */
-
     const issuer = privateKey(issuerUri);
     const newOwnerObj = makeGeneralNftOwner(api, newOwner);
 
