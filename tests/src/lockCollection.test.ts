@@ -1,9 +1,9 @@
 import { getApiConnection } from "./substrate/substrate-api";
 import {
+  createCollection,
   changeIssuer,
   negativeChangeIssuer,
-} from "./util/changeIssuerCollection";
-import { createCollection } from "./util/createCollection";
+} from "./util/tx";
 
 describe("Integration test: collection issuer", () => {
   const Alice = "//Alice";
@@ -14,7 +14,7 @@ describe("Integration test: collection issuer", () => {
     api = await getApiConnection();
   });
 
-  it("Change collection issuer", async () => {
+  it("change collection issuer", async () => {
     await createCollection(
       api,
       Alice,
@@ -26,7 +26,7 @@ describe("Integration test: collection issuer", () => {
     });
   });
 
-  it("[Negative] Change collection issuer", async () => {
+  it("[negative] change collection issuer", async () => {
     await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
       async (collectionId) => {
         await negativeChangeIssuer(api, Alice, collectionId, Bob);

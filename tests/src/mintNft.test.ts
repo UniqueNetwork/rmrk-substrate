@@ -1,6 +1,5 @@
 import { getApiConnection } from './substrate/substrate-api';
-import { createCollection } from './util/createCollection';
-import { mintNft } from './util/mintNft';
+import { mintNft, createCollection } from './util/tx';
 
 describe("Integration test: mint new NFT", () => {
     let api: any;
@@ -9,7 +8,7 @@ describe("Integration test: mint new NFT", () => {
     const alice = '//Alice';
     const bob = '//Bob';
 
-    it("Mint NFT", async () => {
+    it("mint NFT", async () => {
         const owner = alice;
         const collectionMetadata = 'mintingCollectionMetadata';
         const collectionMax = null;
@@ -37,7 +36,7 @@ describe("Integration test: mint new NFT", () => {
         );
     });
 
-    it("Mint NFT and set another owner", async () => {
+    it("mint NFT and set another owner", async () => {
         const owner = bob;
         const collectionMetadata = 'setOwnerCollectionMetadata';
         const collectionMax = null;

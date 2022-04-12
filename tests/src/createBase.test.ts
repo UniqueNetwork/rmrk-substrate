@@ -1,6 +1,5 @@
 import { getApiConnection } from './substrate/substrate-api';
-import { createBase } from "./util/createBase";
-import { createCollection } from "./util/createCollection";
+import { createCollection, createBase } from "./util/tx";
 
 describe("Integration test: create new Base", () => {
     let api: any;
