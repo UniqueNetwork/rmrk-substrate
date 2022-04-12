@@ -165,5 +165,44 @@ describe("Integration test: send NFT", () => {
         expect(isChild).to.be.false;
     });
 
+    it("[Negative] unable to send NFT to itself", async () => {
+        const nftOwner = alice;
+        const collectionId = await createTestCollection(alice);
+
+        const nftId = await mintNft(api, alice, nftOwner, collectionId, "ouroboros-nft-metadata");
+
+        const newOwnerNFT: Nft = [collectionId, nftId];
+
+        const tx = sendNft(api, "sent", alice, collectionId, nftId, newOwnerNFT);
+
+        await expectTxFailure(/CannotSendToDescendentOrSelf/, tx);
+
+        const isChild = await isNftChildOfAnother(api, [collectionId, nftId], newOwnerNFT);
+        expect(isChild).to.be.false;
+    });
+
+    it("[Negative] unable to send NFT to descendent NFT", async () => {
+        const originalOwnerUri = alice;
+
+        const collectionId = await createTestCollection(alice);
+
+        const parentNftId = await mintNft(api, alice, originalOwnerUri, collectionId, "parent-nft-metadata");
+        const childNftId = await mintNft(api, alice, originalOwnerUri, collectionId, "child-nft-metadata");
+
+        const newOwnerNFT: Nft = [collectionId, parentNftId];
+
+        await sendNft(api, "sent", alice, collectionId, childNftId, newOwnerNFT);
+
+        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        expect(isChild).to.be.true;
+
+        const descendentOwner: Nft = [collectionId, childNftId];
+        const tx = sendNft(api, "sent", alice, collectionId, parentNftId, descendentOwner);
+
+        await expectTxFailure(/CannotSendToDescendentOrSelf/, tx);
+        const isChildOwner = await isNftChildOfAnother(api, [collectionId, parentNftId], descendentOwner);
+        expect(isChildOwner).to.be.false;
+    });
+
     after(() => { api.disconnect(); });
 });
