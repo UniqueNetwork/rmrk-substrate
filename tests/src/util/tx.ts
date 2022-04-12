@@ -12,6 +12,7 @@ import {
     extractRmrkCoreTxResult,
     extractRmrkEquipTxResult,
     isTxResultSuccess,
+    isNftOwnedBy,
 } from "./helpers";
 import {
     getCollectionsCount,
@@ -265,6 +266,10 @@ export async function mintNft(
     expect(nft.owner.isAccountId, 'Error: NFT owner should be some user').to.be.true;
     expect(nft.owner.asAccountId.toString()).to.be.equal(owner, "Error: Invalid NFT owner");
 
+    const isOwnedInUniques = await isNftOwnedBy(api, ownerUri, collectionId, nftId);
+    expect(isOwnedInUniques, `Error: created NFT is not actually owned by ${ownerUri}`)
+        .to.be.true;
+
     if (recipient === null) {
         expect(nft.recipient.eq(nft.owner.asAccountId), 'Error: Invalid NFT recipient')
             .to.be.true;
@@ -342,8 +347,13 @@ export async function sendNft(
 
     const nftAfterSending = nftAfterSendingOpt.unwrap();
 
-    // TODO check owner via uniques pallet
+    // FIXME the ownership is the uniques responsibility
+    // so the `owner` field should be removed from the NFT info.
     expect(nftAfterSending.owner.eq(newOwnerObj), 'Error: Invalid NFT owner after sending')
+        .to.be.true;
+
+    const isOwnedInUniques = await isNftOwnedBy(api, newOwner, collectionId, nftId);
+    expect(isOwnedInUniques, `Error: created NFT is not actually owned by ${newOwner.toString()}`)
         .to.be.true;
 
     expect(nftAfterSending.recipient.eq(nftBeforeSending.recipient), 'Error: Invalid NFT recipient after sending')
@@ -423,6 +433,10 @@ export async function acceptNft(
     const nftAfter = nftAfterOpt.unwrap();
 
     expect(nftAfter.eq(pendingNftBefore), 'NFT before acceptance should be the same after accept')
+        .to.be.true;
+
+    const isOwnedInUniques = await isNftOwnedBy(api, newOwner, collectionId, nftId);
+    expect(isOwnedInUniques, `Error: created NFT is not actually owned by ${newOwner.toString()}`)
         .to.be.true;
 }
 

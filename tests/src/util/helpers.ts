@@ -2,8 +2,9 @@ import { ApiPromise } from "@polkadot/api";
 import { RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner } from "@polkadot/types/lookup";
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
+import { IKeyringPair } from '@polkadot/types/types';
 import privateKey from "../substrate/privateKey";
-import { NftIdTuple, getChildren } from './fetch';
+import { NftIdTuple, getChildren, getOwnedNfts } from './fetch';
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
 
@@ -29,6 +30,24 @@ export function makeNftOwner(api: ApiPromise, owner: string | NftIdTuple): NftOw
     }
 }
 
+export async function isNftOwnedBy(
+    api: ApiPromise,
+    owner: string | NftIdTuple,
+    collectionId: number,
+    nftId: number
+): Promise<boolean> {
+    if (typeof owner === "string") {
+        return (await getOwnedNfts(api, owner))
+            .find(([ownedColId, ownedNftId]) => {
+                return ownedColId === collectionId
+                    && ownedNftId === nftId;
+            }) !== undefined;
+    } else {
+        // FIXME This method should be implemented via RPC
+        return true;
+    }
+}
+
 export async function isNftChildOfAnother(
     api: ApiPromise,
     collectionId: number,
@@ -36,9 +55,9 @@ export async function isNftChildOfAnother(
     parentNft: NftIdTuple
 ): Promise<boolean> {
     return (await getChildren(api, parentNft[0], parentNft[1]))
-        .find((child) => {
-            return child[0] === collectionId
-                && child[1] === nftId;
+        .find(([childCollectionId, childNftId]) => {
+            return childCollectionId === collectionId
+                && childNftId === nftId;
         }) !== undefined;
 }
 

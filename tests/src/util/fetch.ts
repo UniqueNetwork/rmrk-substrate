@@ -7,9 +7,11 @@ import type {
     RmrkTraitsBaseBaseInfo as Base,
     RmrkTraitsPartPartType as PartType
 } from '@polkadot/types/lookup';
+import { IKeyringPair } from '@polkadot/types/types';
 import '../interfaces/augment-api-query';
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
+import privateKey from '../substrate/privateKey';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -22,6 +24,17 @@ export async function getCollectionsCount(api: ApiPromise): Promise<number> {
 
 export async function getCollection(api: ApiPromise, id: number): Promise<Option<Collection>> {
     return api.query.rmrkCore.collections(id);
+}
+
+export async function getOwnedNfts(api: ApiPromise, ownerUri: string): Promise<NftIdTuple[]> {
+    const uniquesApi = api.query.uniques;
+    const owner = privateKey(ownerUri);
+
+    return await Promise.all(
+        (await uniquesApi.account.keys(owner.address)).map(async ({args: [_, collectionId, nftId]}) => {
+            return [collectionId.toNumber(), nftId.toNumber()];
+        })
+    );
 }
 
 export async function getNft(api: ApiPromise, collectionId: number, nftId: number): Promise<Option<Nft>> {
