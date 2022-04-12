@@ -231,5 +231,39 @@ describe("Integration test: send NFT", () => {
         expect(isOuroboros).to.be.false;
     });
 
+    it("send nested NFT to another user", async () => {
+        const originalOwner = alice;
+        const newOwner = bob;
+
+        const collectionId = await createTestCollection(alice);
+
+        const parentNftId = await mintNft(api, alice, originalOwner, collectionId, "parent-nft-metadata");
+        const childNftId = await mintNft(api, alice, originalOwner, collectionId, "child-nft-metadata");
+
+        const parentNftTuple: NftIdTuple = [collectionId, parentNftId];
+
+        await sendNft(api, "sent", originalOwner, collectionId, childNftId, parentNftTuple);
+
+        await sendNft(api, "sent", originalOwner, collectionId, childNftId, newOwner);
+    });
+
+    it("[negative] send nested NFT to another user (by a not-root-owner)", async () => {
+        const originalOwner = alice;
+        const newOwner = bob;
+
+        const collectionId = await createTestCollection(alice);
+
+        const parentNftId = await mintNft(api, alice, originalOwner, collectionId, "parent-nft-metadata");
+        const childNftId = await mintNft(api, alice, originalOwner, collectionId, "child-nft-metadata");
+
+        const parentNftTuple: NftIdTuple = [collectionId, parentNftId];
+
+        await sendNft(api, "sent", originalOwner, collectionId, childNftId, parentNftTuple);
+
+        const tx = sendNft(api, "sent", newOwner, collectionId, childNftId, newOwner);
+
+        await expectTxFailure(/NoPermission/, tx);
+    });
+
     after(() => { api.disconnect(); });
 });
