@@ -72,7 +72,7 @@ describe("Integration test: send NFT", () => {
 
         await sendNft(api, "sent", alice, collectionId, childNftId, newOwnerNFT);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.true;
     });
 
@@ -90,7 +90,7 @@ describe("Integration test: send NFT", () => {
 
         await expectTxFailure(/NoAvailableNftId/, tx);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.false;
     });
 
@@ -111,7 +111,7 @@ describe("Integration test: send NFT", () => {
 
         await expectTxFailure(/NoPermission/, tx);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.false;
     });
 
@@ -129,7 +129,7 @@ describe("Integration test: send NFT", () => {
 
         await expectTxFailure(/NoAvailableNftId/, tx);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.false;
     });
 
@@ -161,7 +161,7 @@ describe("Integration test: send NFT", () => {
 
         await sendNft(api, "pending", bob, bobCollectionId, childNftId, newOwnerNFT);
 
-        const isChild = await isNftChildOfAnother(api, [bobCollectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, bobCollectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.false;
     });
 
@@ -177,11 +177,11 @@ describe("Integration test: send NFT", () => {
 
         await expectTxFailure(/CannotSendToDescendentOrSelf/, tx);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, nftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, nftId, newOwnerNFT);
         expect(isChild).to.be.false;
     });
 
-    it("[Negative] unable to send NFT to parent NFT", async () => {
+    it("[Negative] unable to send NFT to child NFT", async () => {
         const originalOwnerUri = alice;
 
         const collectionId = await createTestCollection(alice);
@@ -193,14 +193,14 @@ describe("Integration test: send NFT", () => {
 
         await sendNft(api, "sent", alice, collectionId, childNftId, newOwnerNFT);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], newOwnerNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, newOwnerNFT);
         expect(isChild).to.be.true;
 
         const descendentOwner: Nft = [collectionId, childNftId];
         const tx = sendNft(api, "sent", alice, collectionId, parentNftId, descendentOwner);
 
         await expectTxFailure(/CannotSendToDescendentOrSelf/, tx);
-        const isOuroboros = await isNftChildOfAnother(api, [collectionId, parentNftId], descendentOwner);
+        const isOuroboros = await isNftChildOfAnother(api, collectionId, parentNftId, descendentOwner);
         expect(isOuroboros).to.be.false;
     });
 
@@ -217,20 +217,20 @@ describe("Integration test: send NFT", () => {
 
         await sendNft(api, "sent", alice, collectionId, childNftId, ownerParentNFT);
 
-        const isChild = await isNftChildOfAnother(api, [collectionId, childNftId], ownerParentNFT);
+        const isChild = await isNftChildOfAnother(api, collectionId, childNftId, ownerParentNFT);
         expect(isChild).to.be.true;
 
         const ownerChildNFT: Nft = [collectionId, childNftId];
         await sendNft(api, "sent", alice, collectionId, grandsonNftId, ownerChildNFT);
 
-        const isGrandson = await isNftChildOfAnother(api, [collectionId, grandsonNftId], ownerChildNFT);
+        const isGrandson = await isNftChildOfAnother(api, collectionId, grandsonNftId, ownerChildNFT);
         expect(isGrandson).to.be.true;
 
         const ownerGrandsonNFT: Nft = [collectionId, grandsonNftId];
         const tx = sendNft(api, "sent", alice, collectionId, parentNftId, ownerGrandsonNFT);
 
         await expectTxFailure(/CannotSendToDescendentOrSelf/, tx);
-        const isOuroboros = await isNftChildOfAnother(api, [collectionId, parentNftId], ownerGrandsonNFT);
+        const isOuroboros = await isNftChildOfAnother(api, collectionId, parentNftId, ownerGrandsonNFT);
         expect(isOuroboros).to.be.false;
     });
 

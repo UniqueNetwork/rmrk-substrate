@@ -17,12 +17,13 @@ export async function getChildren(
 
 export async function isNftChildOfAnother(
     api: ApiPromise,
-    childNft: Nft,
+    collectionId: number,
+    nftId: number,
     parentNft: Nft
 ): Promise<boolean> {
     return (await getChildren(api, parentNft[0], parentNft[1]))
         .find((child) => {
-            return child[0] === childNft[0]
-                && child[1] === childNft[1];
+            return child[0] === collectionId
+                && child[1] === nftId;
         }) !== undefined;
 }
