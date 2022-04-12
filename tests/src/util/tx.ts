@@ -93,6 +93,45 @@ export async function changeIssuer(
     });
 }
 
+export async function deleteCollection(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: string
+): Promise<number> {
+    const issuer = privateKey(issuerUri);
+    const tx = api.tx.rmrkCore.destroyCollection(collectionId);
+    const events = await executeTransaction(api, issuer, tx);
+
+    const collectionTxResult = extractRmrkCoreTxResult(
+        events,
+        "CollectionDestroy",
+        (data) => {
+        return parseInt(data[1].toString(), 10);
+        }
+    );
+    expect(collectionTxResult.success).to.be.true;
+
+    const collection = await getCollection(
+        api,
+        parseInt(collectionId, 10)
+    );
+    expect(collection.isEmpty).to.be.true;
+
+    return 0;
+}
+
+export async function negativeDeleteCollection(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: string
+): Promise<number> {
+    const issuer = privateKey(issuerUri);
+    const tx = api.tx.rmrkCore.destroyCollection(collectionId);
+    await expect(executeTransaction(api, issuer, tx)).to.be.rejected;
+
+    return 0;
+}
+
 export async function negativeChangeIssuer(
     api: ApiPromise,
     issuerUri: string,
