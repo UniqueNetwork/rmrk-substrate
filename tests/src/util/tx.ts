@@ -1,23 +1,31 @@
 import { ApiPromise } from "@polkadot/api";
-import type { Vec } from '@polkadot/types-codec';
 import {
   RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
   RmrkTraitsPartPartType as PartType,
   RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import { Option, Vec, u32, Bytes } from '@polkadot/types-codec';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
 import {
-  getBase, getCollection, getCollectionsCount, getNft, getParts, getPendingNft, getThemeValue,
-  NftIdTuple
-} from "./fetch";
-import {
-  extractRmrkCoreTxResult,
-  extractRmrkEquipTxResult,
-  isTxResultSuccess, makeNftOwner
+    makeNftOwner,
+    extractRmrkCoreTxResult,
+    extractRmrkEquipTxResult,
+    isTxResultSuccess,
 } from "./helpers";
+import {
+    getCollectionsCount,
+    getCollection,
+    getNft,
+    getPendingNft,
+    getBase,
+    getParts,
+    getThemeValue,
+    NftIdTuple,
+    getNftPropertyValue
+} from "./fetch";
+import chaiAsPromised from 'chai-as-promised';
+import chai from 'chai';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -111,6 +119,80 @@ export async function deleteCollection(
     expect(collection.isEmpty).to.be.true;
 
     return 0;
+}
+
+export async function negativeDeleteCollection(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: string
+): Promise<number> {
+    const issuer = privateKey(issuerUri);
+    const tx = api.tx.rmrkCore.destroyCollection(collectionId);
+    await expect(executeTransaction(api, issuer, tx)).to.be.rejected;
+
+    return 0;
+}
+
+export async function negativeChangeIssuer(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    newIssuer: string
+) {
+    const alice = privateKey(issuerUri);
+    const bob = privateKey(newIssuer);
+    const tx = api.tx.rmrkCore.changeIssuer(collectionId, bob.address);
+    await expect(executeTransaction(api, alice, tx)).to.be.rejectedWith(
+        /rmrkCore.NoPermission/
+    );
+}
+
+export async function setNftProperty(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
+    key: string,
+    value: string
+) {
+    const issuer = privateKey(issuerUri);
+    const nftIdOpt = api.createType('Option<u32>', nftId);
+    const tx = api.tx.rmrkCore.setProperty(
+        collectionId,
+        nftIdOpt,
+        key,
+        value
+    );
+    const events = await executeTransaction(api, issuer, tx);
+
+    const propResult = extractRmrkCoreTxResult(
+        events, 'PropertySet', (data) => {
+            return {
+                collectionId: parseInt(data[0].toString(), 10),
+                nftId: data[1] as Option<u32>,
+                key: data[2] as Bytes,
+                value: data[3] as Bytes
+            };
+        }
+    );
+
+    expect(propResult.success).to.be.true;
+    if (propResult.successData) {
+        const eventData = propResult.successData;
+
+        expect(eventData.collectionId).to.be.equal(collectionId);
+        expect(eventData.nftId.eq(nftIdOpt)).to.be.true;
+        expect(eventData.key.eq(key)).to.be.true;
+        expect(eventData.value.eq(value)).to.be.true;
+    }
+
+    const fetchedValueOpt = await getNftPropertyValue(api, collectionId, nftId, key);
+
+    expect(fetchedValueOpt.isSome).to.be.true;
+
+    const fetchedValue = fetchedValueOpt.unwrap();
+
+    expect(fetchedValue.eq(value)).to.be.true;
 }
 
 export async function mintNft(

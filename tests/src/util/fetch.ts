@@ -32,6 +32,15 @@ export async function getPendingNft(api: ApiPromise, collectionId: number, nftId
     return api.query.rmrkCore.pendingNfts(collectionId, nftId);
 }
 
+export async function getNftPropertyValue(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    key: string
+): Promise<Option<Bytes>> {
+    return (await api.query.rmrkCore.properties(collectionId, nftId, key)) as Option<Bytes>;
+}
+
 export async function getChildren(
     api: ApiPromise,
     collectionId: number,

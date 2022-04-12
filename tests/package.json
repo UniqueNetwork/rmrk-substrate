@@ -31,6 +31,7 @@
     "testCreateBase": "mocha --timeout 9999999 -r ts-node/register './src/createBase.test.ts'",
     "testCreateCollection": "mocha --timeout 9999999 -r ts-node/register './src/createCollection.test.ts'",
     "testMintNft": "mocha --timeout 9999999 -r ts-node/register './src/mintNft.test.ts'",
+    "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
     "testSendNft": "mocha --timeout 9999999 -r ts-node/register './src/sendNft.test.ts'",
     "testAcceptNft": "mocha --timeout 9999999 -r ts-node/register './src/acceptNft.test.ts'",
     "polkadot-types-fetch-metadata": "curl -H 'Content-Type: application/json' -d '{\"id\":\"1\", \"jsonrpc\":\"2.0\", \"method\": \"state_getMetadata\", \"params\":[]}' http://localhost:9933 > src/interfaces/metadata.json",
