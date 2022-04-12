@@ -130,20 +130,6 @@ describe("Integration test: send NFT", () => {
         expect(isChild).to.be.false;
     });
 
-    // it("Mint NFT to some user, check if it can be sent", async () => {
-    //     // FIXME BUG!
-
-
-    //     const collectionId = await createTestCollection(alice);
-
-    //     const nftOwner = bob;
-    //     const newOwner = alice;
-
-    //     const nftId = await mintNft(api, alice, nftOwner, collectionId, "setOwner-NFT-meta");
-
-    //     await sendNft(api, "sent", nftOwner, collectionId, nftId, newOwner);
-    // });
-
     it("send NFT to another NFT owned by another user", async () => {
         const ownerAlice = alice;
         const ownerBob = bob;
