@@ -47,27 +47,27 @@ export async function createCollection(
     const events = await executeTransaction(api, issuer, tx);
 
     const collectionResult = extractRmrkCoreTxResult(
-    events, 'CollectionCreated', (data) => {
-        return parseInt(data[1].toString(), 10)
-    }
+        events, 'CollectionCreated', (data) => {
+            return parseInt(data[1].toString(), 10)
+        }
     );
-    expect(collectionResult.success).to.be.true;
+    expect(collectionResult.success, 'Error: unable to create a collection').to.be.true;
 
     collectionId = collectionResult.successData ?? 0;
 
     const newCollectionCount = await getCollectionsCount(api);
     const collectionOption = await getCollection(api, collectionId);
 
-    expect(newCollectionCount).to.be.equal(oldCollectionCount + 1, 'Error: NFT collection is NOT created');
-    expect(collectionOption.isSome).to.be.true;
+    expect(newCollectionCount).to.be.equal(oldCollectionCount + 1, 'Error: NFT collection count should increase');
+    expect(collectionOption.isSome, 'Error: unable to fetch created NFT collection').to.be.true;
 
     const collection = collectionOption.unwrap();
 
     expect(collection.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT collection metadata");
-    expect(collection.max.isSome).to.be.equal(max !== null);
+    expect(collection.max.isSome).to.be.equal(max !== null, "Error: Invalid NFT collection max");
 
     if (collection.max.isSome) {
-    expect(collection.max.unwrap().toNumber()).to.be.equal(max, "Error: Invalid NFT collection max");
+        expect(collection.max.unwrap().toNumber()).to.be.equal(max, "Error: Invalid NFT collection max");
     }
     expect(collection.symbol.toUtf8()).to.be.equal(symbol, "Error: Invalid NFT collection's symbol");
     expect(collection.nftsCount.toNumber()).to.be.equal(0, "Error: NFT collection shoudn't have any tokens");
@@ -86,11 +86,12 @@ export async function changeIssuer(
     const bob = privateKey(newIssuer);
     const tx = api.tx.rmrkCore.changeIssuer(collectionId, bob.address);
     const events = await executeTransaction(api, alice, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
+    expect(isTxResultSuccess(events), 'Error: Unable to change NFT collection issuer').to.be.true;
 
     await getCollection(api, collectionId).then((collectionOption) => {
         const collection = collectionOption.unwrap();
-        expect(collection.issuer.toString()).to.be.deep.eq(bob.address);
+        expect(collection.issuer.toString())
+            .to.be.deep.eq(bob.address, 'Error: Invalid NFT collection issuer');
     });
 }
 
@@ -110,13 +111,13 @@ export async function deleteCollection(
         return parseInt(data[1].toString(), 10);
         }
     );
-    expect(collectionTxResult.success).to.be.true;
+    expect(collectionTxResult.success, 'Error: Unable to delete NFT collection').to.be.true;
 
     const collection = await getCollection(
         api,
         parseInt(collectionId, 10)
     );
-    expect(collection.isEmpty).to.be.true;
+    expect(collection.isEmpty, 'Error: NFT collection should be deleted').to.be.true;
 
     return 0;
 }
@@ -176,23 +177,33 @@ export async function setNftProperty(
         }
     );
 
-    expect(propResult.success).to.be.true;
+    expect(propResult.success, 'Error: Unable to set NFT property').to.be.true;
     if (propResult.successData) {
         const eventData = propResult.successData;
+        const eventDescription = 'from set NFT property event';
 
-        expect(eventData.collectionId).to.be.equal(collectionId);
-        expect(eventData.nftId.eq(nftIdOpt)).to.be.true;
-        expect(eventData.key.eq(key)).to.be.true;
-        expect(eventData.value.eq(value)).to.be.true;
+        expect(eventData.collectionId, 'Error: Invalid collection ID ' + eventDescription)
+            .to.be.equal(collectionId);
+
+        expect(eventData.nftId.eq(nftIdOpt), 'Error: Invalid NFT ID ' + eventDescription)
+            .to.be.true;
+
+        expect(eventData.key.eq(key), 'Error: Invalid property key ' + eventDescription)
+            .to.be.true;
+
+        expect(eventData.value.eq(value), 'Error: Invalid property value ' + eventDescription)
+            .to.be.true;
     }
 
     const fetchedValueOpt = await getNftPropertyValue(api, collectionId, nftId, key);
 
-    expect(fetchedValueOpt.isSome).to.be.true;
+    expect(fetchedValueOpt.isSome, 'Error: Unable to fetch added NFT property')
+        .to.be.true;
 
     const fetchedValue = fetchedValueOpt.unwrap();
 
-    expect(fetchedValue.eq(value)).to.be.true;
+    expect(fetchedValue.eq(value), 'Error: Invalid NFT property value')
+        .to.be.true;
 }
 
 export async function mintNft(
@@ -231,34 +242,35 @@ export async function mintNft(
         }
     );
 
-    expect(nftResult.success).to.be.true;
+    expect(nftResult.success, 'Error: Unable to mint NFT').to.be.true;
 
     const newCollectionNftsCount = (await getCollection(api, collectionId))
         .unwrap()
         .nftsCount
         .toNumber();
 
-    expect(newCollectionNftsCount).to.be.equal(oldCollectionNftsCount + 1);
+    expect(newCollectionNftsCount, 'Error: NFTs count should increase')
+        .to.be.equal(oldCollectionNftsCount + 1);
 
     nftId = nftResult.successData ?? 0;
 
     const nftOption = await getNft(api, collectionId, nftId);
 
-    expect(nftOption.isSome).to.be.true;
+    expect(nftOption.isSome, 'Error: Unable to fetch created NFT').to.be.true;
 
     const nft = nftOption.unwrap();
 
     // FIXME the ownership is the uniques responsibility
     // so the `owner` field should be removed from the NFT info.
-    expect(nft.owner.isAccountId).to.be.true;
+    expect(nft.owner.isAccountId, 'Error: NFT owner should be some user').to.be.true;
     expect(nft.owner.asAccountId.toString()).to.be.equal(owner, "Error: Invalid NFT owner");
 
-    // expect(await isNftOwnedByAccount(api, owner, collectionId, nftId)).to.be.true;
-
     if (recipient === null) {
-        expect(nft.recipient.eq(nft.owner.asAccountId)).to.be.true;
+        expect(nft.recipient.eq(nft.owner.asAccountId), 'Error: Invalid NFT recipient')
+            .to.be.true;
     } else {
-        expect(nft.recipient.eq(recipient)).to.be.true;
+        expect(nft.recipient.eq(recipient), 'Error: Invalid NFT recipient')
+            .to.be.true;
     }
     expect(nft.royalty.toNumber()).to.be.equal(royalty ?? 0, "Error: Invalid NFT's royalty");
     expect(nft.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT metadata");
@@ -290,46 +302,67 @@ export async function sendNft(
         };
     });
 
-    expect(sendResult.success).to.be.true;
+    expect(sendResult.success, 'Error: Unable to send NFT').to.be.true;
     if (sendResult.successData) {
         const sendData = sendResult.successData;
 
-        expect(sendData.dstOwner.eq(newOwnerObj)).to.be.true;
-        expect(sendData.collectionId).to.be.equal(collectionId);
-        expect(sendData.nftId).to.be.equal(nftId);
+        expect(sendData.dstOwner.eq(newOwnerObj), 'Error: Invalid target user (from event data)')
+            .to.be.true;
+
+        expect(sendData.collectionId)
+            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+
+        expect(sendData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
     }
 
-    expect(nftBeforeSendingOpt.isSome).to.be.true;
+    expect(nftBeforeSendingOpt.isSome, 'Error: Unable to fetch NFT before sending').to.be.true;
 
     const nftBeforeSending = nftBeforeSendingOpt.unwrap();
 
     let getFromValidStorage;
     let getFromInvalidStorage;
+    let validStorage;
+    let invalidStorageName;
 
     if (expectedStatus === "pending") {
         getFromValidStorage = getPendingNft;
         getFromInvalidStorage = getNft;
+        validStorage = 'PendingNfts';
+        invalidStorageName = 'Nfts';
     } else {
         getFromValidStorage = getNft;
         getFromInvalidStorage = getPendingNft;
+        validStorage = 'Nfts';
+        invalidStorageName = 'PendingNfts'
     }
 
     const nftAfterSendingOpt = await getFromValidStorage(api, collectionId, nftId);
 
-    expect(nftAfterSendingOpt.isSome).to.be.true;
+    expect(nftAfterSendingOpt.isSome, 'Error: Unable to fetch NFT after sending').to.be.true;
 
     const nftAfterSending = nftAfterSendingOpt.unwrap();
 
     // TODO check owner via uniques pallet
-    expect(nftAfterSending.owner.eq(newOwnerObj)).to.be.true;
+    expect(nftAfterSending.owner.eq(newOwnerObj), 'Error: Invalid NFT owner after sending')
+        .to.be.true;
 
-    expect(nftAfterSending.recipient.eq(nftBeforeSending.recipient)).to.be.true;
-    expect(nftAfterSending.royalty.eq(nftBeforeSending.royalty)).to.be.true;
-    expect(nftAfterSending.metadata.eq(nftBeforeSending.metadata)).to.be.true;
-    expect(nftAfterSending.equipped.eq(nftBeforeSending.equipped)).to.be.true;
+    expect(nftAfterSending.recipient.eq(nftBeforeSending.recipient), 'Error: Invalid NFT recipient after sending')
+        .to.be.true;
+
+    expect(nftAfterSending.royalty.eq(nftBeforeSending.royalty), 'Error: Invalid NFT royalty after sending')
+        .to.be.true;
+
+    expect(nftAfterSending.metadata.eq(nftBeforeSending.metadata), 'Error: Invalid NFT metadata after sending')
+        .to.be.true;
+
+    expect(nftAfterSending.equipped.eq(nftBeforeSending.equipped), 'Error: Invalid NFT equipped status after sending')
+        .to.be.true;
 
     const shouldBeEmpty = await getFromInvalidStorage(api, collectionId, nftId);
-    expect(shouldBeEmpty.isNone).to.be.true;
+    expect(
+        shouldBeEmpty.isNone,
+        `Error: NFT should be ONLY in the ${validStorage} storage, but it is found in ${invalidStorageName}`
+    ).to.be.true;
 }
 
 export async function acceptNft(
@@ -356,29 +389,41 @@ export async function acceptNft(
         };
     });
 
-    expect(acceptResult.success).to.be.true;
+    expect(acceptResult.success, 'Error: Unable to accept NFT').to.be.true;
     if (acceptResult.successData) {
         const acceptData = acceptResult.successData;
 
-        expect(acceptData.recipient.eq(newOwnerObj)).to.be.true;
-        expect(acceptData.collectionId).to.be.equal(collectionId);
-        expect(acceptData.nftId).to.be.equal(nftId);
+        expect(acceptData.recipient.eq(newOwnerObj), 'Error: Invalid NFT recipient (from event data)')
+            .to.be.true;
+
+        expect(acceptData.collectionId)
+            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+
+        expect(acceptData.nftId)
+            .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
     }
 
-    expect(pendingNftBeforeOpt.isSome).to.be.true;
-    expect(nftBeforeOpt.isNone).to.be.true;
+    expect(pendingNftBeforeOpt.isSome, 'Error: NFT should be in PendingNfts storage to be accepted')
+        .to.be.true;
+
+    expect(nftBeforeOpt.isNone, 'Error: NFT should NOT be in Nfts storage to be accepted')
+        .to.be.true;
 
     const pendingNftBefore = pendingNftBeforeOpt.unwrap();
 
     const pendingNftAfterOpt = await getPendingNft(api, collectionId, nftId);
     const nftAfterOpt = await getNft(api, collectionId, nftId);
 
-    expect(pendingNftAfterOpt.isNone).to.be.true;
-    expect(nftAfterOpt.isSome).to.be.true;
+    expect(pendingNftAfterOpt.isNone, 'Error: NFT should NOT be in PendingNfts storage after accept')
+        .to.be.true;
+
+    expect(nftAfterOpt.isSome, 'Error: NFT should be in Nfts storage after accept')
+        .to.be.true;
 
     const nftAfter = nftAfterOpt.unwrap();
 
-    expect(nftAfter.eq(pendingNftBefore)).to.be.true;
+    expect(nftAfter.eq(pendingNftBefore), 'NFT before acceptance should be the same after accept')
+        .to.be.true;
 }
 
 export async function createBase(
@@ -403,17 +448,19 @@ export async function createBase(
         }
     );
 
-    expect(baseResult.success).to.be.true;
+    expect(baseResult.success, 'Error: Unable to create Base')
+        .to.be.true;
 
     baseId = baseResult.successData ?? 0;
     const baseOptional = await getBase(api, baseId);
 
-    expect(baseOptional.isSome).to.be.true;
+    expect(baseOptional.isSome, 'Error: Unable to fetch created Base')
+        .to.be.true;
 
     const base = baseOptional.unwrap();
     const baseParts = await getParts(api, baseId);
 
-    expect(base.issuer.toString()).to.be.equal(issuer.address);
+    expect(base.issuer.toString()).to.be.equal(issuer.address, "Error: Invalid Base issuer");
     expect(base.baseType.toUtf8()).to.be.equal(baseType, "Error: Invalid Base type");
     expect(base.symbol.toUtf8()).to.be.equal(symbol, "Error: Invalid Base symbol");
     expect(base.parts.isEmpty).to.be.equal(parts.length == 0, "Error: Invalid Base parts count");
@@ -429,12 +476,15 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
     const tx = api.tx.rmrkEquip.themeAdd(baseId, theme);
     const events = await executeTransaction(api, issuer, tx);
 
-    expect(isTxResultSuccess(events)).to.be.true;
+    expect(isTxResultSuccess(events), 'Error: Unable to add Theme').to.be.true;
 
     theme.properties.forEach(async (property) => {
         const valueOptional = await getThemeValue(api, baseId, theme.name, property.key);
 
-        expect(valueOptional.isSome).to.be.true;
+        expect(
+            valueOptional.isSome,
+            `Error: unable to fetch key ${property.key} of theme ${theme.name}`
+        ).to.be.true;
 
         const value = valueOptional.unwrap();
 
