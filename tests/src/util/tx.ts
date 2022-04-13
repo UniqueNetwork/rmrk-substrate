@@ -1,30 +1,20 @@
 import { ApiPromise } from "@polkadot/api";
+import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
   RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
   RmrkTraitsPartPartType as PartType,
   RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
-import { Option, Vec, u32, Bytes } from '@polkadot/types-codec';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
 import {
-    makeNftOwner,
-    extractRmrkCoreTxResult,
-    extractRmrkEquipTxResult,
-    isTxResultSuccess,
-    isNftOwnedBy,
-} from "./helpers";
-import {
-    getCollectionsCount,
-    getCollection,
-    getNft,
-    getPendingNft,
-    getBase,
-    getParts,
-    getThemeValue,
-    NftIdTuple,
-    getPropertyValue
+  getBase, getCollection, getCollectionsCount, getNft, getParts, getPendingNft, getPropertyValue, getThemeValue,
+  NftIdTuple
 } from "./fetch";
+import {
+  extractRmrkCoreTxResult,
+  extractRmrkEquipTxResult, isNftOwnedBy, isTxResultSuccess, makeNftOwner
+} from "./helpers";
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
 
@@ -504,4 +494,20 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
 
         expect(value).to.be.equal(property.value, "Error: Invalid Theme value");
     });
+}
+
+export async function lockCollection(
+  api: ApiPromise,
+  issuerUri: string,
+  collectionId: number
+) {
+  const alice = privateKey(issuerUri);
+  const tx = api.tx.rmrkCore.lockCollection(collectionId);
+  const events = await executeTransaction(api, alice, tx);
+  expect(isTxResultSuccess(events)).to.be.true;
+
+  await getCollection(api, collectionId).then((collectionOption) => {
+    const collection = collectionOption.unwrap();
+    expect(collection.max.unwrap().toNumber()).to.be.equal(0);
+  });
 }
