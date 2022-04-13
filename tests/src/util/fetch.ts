@@ -45,10 +45,10 @@ export async function getPendingNft(api: ApiPromise, collectionId: number, nftId
     return api.query.rmrkCore.pendingNfts(collectionId, nftId);
 }
 
-export async function getNftPropertyValue(
+export async function getPropertyValue(
     api: ApiPromise,
     collectionId: number,
-    nftId: number,
+    nftId: number | null,
     key: string
 ): Promise<Option<Bytes>> {
     return (await api.query.rmrkCore.properties(collectionId, nftId, key)) as Option<Bytes>;

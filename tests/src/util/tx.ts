@@ -23,7 +23,7 @@ import {
     getParts,
     getThemeValue,
     NftIdTuple,
-    getNftPropertyValue
+    getPropertyValue
 } from "./fetch";
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
@@ -196,7 +196,7 @@ export async function setNftProperty(
             .to.be.true;
     }
 
-    const fetchedValueOpt = await getNftPropertyValue(api, collectionId, nftId, key);
+    const fetchedValueOpt = await getPropertyValue(api, collectionId, nftId, key);
 
     expect(fetchedValueOpt.isSome, 'Error: Unable to fetch added NFT property')
         .to.be.true;
