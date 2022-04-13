@@ -113,18 +113,6 @@ export async function deleteCollection(
     return 0;
 }
 
-export async function negativeDeleteCollection(
-    api: ApiPromise,
-    issuerUri: string,
-    collectionId: string
-): Promise<number> {
-    const issuer = privateKey(issuerUri);
-    const tx = api.tx.rmrkCore.destroyCollection(collectionId);
-    await expect(executeTransaction(api, issuer, tx)).to.be.rejected;
-
-    return 0;
-}
-
 export async function mintNft(
     api: ApiPromise,
     issuerUri: string,
