@@ -511,3 +511,21 @@ export async function lockCollection(
     expect(collection.max.unwrap().toNumber()).to.be.equal(0);
   });
 }
+
+export async function setPropertyCollection(
+  api: ApiPromise,
+  issuerUri: string,
+  collectionId: number,
+  key: string,
+  value: string
+) {
+  const alice = privateKey(issuerUri);
+
+  const tx = api.tx.rmrkCore.setProperty(collectionId, null, key, value);
+  const events = await executeTransaction(api, alice, tx);
+  expect(isTxResultSuccess(events)).to.be.true;
+
+  const fetchedValueOpt = await getPropertyValue(api, collectionId, null, key);
+  const fetchedValue = fetchedValueOpt.unwrap();
+  expect(fetchedValue.eq(value)).to.be.true;
+}
