@@ -31,6 +31,7 @@
     "testCreateBase": "mocha --timeout 9999999 -r ts-node/register './src/createBase.test.ts'",
     "testCreateCollection": "mocha --timeout 9999999 -r ts-node/register './src/createCollection.test.ts'",
     "testMintNft": "mocha --timeout 9999999 -r ts-node/register './src/mintNft.test.ts'",
+    "testGetOwnedNfts": "mocha --timeout 9999999 -r ts-node/register './src/getOwnedNfts.test.ts'",
     "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
     "testSendNft": "mocha --timeout 9999999 -r ts-node/register './src/sendNft.test.ts'",
     "testAcceptNft": "mocha --timeout 9999999 -r ts-node/register './src/acceptNft.test.ts'",
