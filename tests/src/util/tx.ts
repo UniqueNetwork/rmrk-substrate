@@ -499,7 +499,8 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
 export async function lockCollection(
   api: ApiPromise,
   issuerUri: string,
-  collectionId: number
+  collectionId: number,
+  max: number = 0
 ) {
   const alice = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.lockCollection(collectionId);
@@ -508,7 +509,7 @@ export async function lockCollection(
 
   await getCollection(api, collectionId).then((collectionOption) => {
     const collection = collectionOption.unwrap();
-    expect(collection.max.unwrap().toNumber()).to.be.equal(0);
+    expect(collection.max.unwrap().toNumber()).to.be.equal(max);
   });
 }
 
