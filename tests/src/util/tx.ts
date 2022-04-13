@@ -3,12 +3,22 @@ import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
   RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
   RmrkTraitsPartPartType as PartType,
+  RmrkTraitsPartEquippableList as EquippableList,
   RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
 import {
-  getBase, getCollection, getCollectionsCount, getNft, getParts, getPendingNft, getPropertyValue, getThemeValue,
+  getBase,
+  getCollection,
+  getCollectionsCount,
+  getEquippableList,
+  getNft,
+  getParts,
+  getPendingNft,
+  getPropertyValue,
+  getResourcePriorities,
+  getThemeValue,
   NftIdTuple
 } from "./fetch";
 import {
@@ -471,6 +481,82 @@ export async function createBase(
     expect(partTypes.eq(baseParts)).to.be.true;
 
     return baseId;
+}
+
+export async function setResourcePriorities(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
+    priorities: string[]
+) {
+    const issuer = privateKey(issuerUri);
+
+    const prioritiesVec = api.createType('Vec<Bytes>', priorities);
+    const tx = api.tx.rmrkCore.setPriority(collectionId, nftId, prioritiesVec);
+    const events = await executeTransaction(api, issuer, tx);
+
+    const prioResult = extractRmrkCoreTxResult(events, 'PrioritySet', (data) => {
+        return {
+            collectionId: parseInt(data[0].toString(), 10),
+            nftId: parseInt(data[1].toString(), 10)
+        };
+    });
+
+    expect(prioResult.success, 'Error: Unable to set resource priorities').to.be.true;
+    if (prioResult.successData) {
+        const eventData = prioResult.successData;
+
+        expect(eventData.collectionId)
+            .to.be.equal(collectionId, 'Error: Invalid collection ID (set priorities event data)');
+
+        expect(eventData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (set priorities event data');
+    }
+
+    const fetchedPrios = (await getResourcePriorities(api, collectionId, nftId))
+        .map((resName) => resName.toUtf8());
+
+    expect(fetchedPrios).to.be.deep.equal(priorities, 'Error: Invalid priorities are set');
+}
+
+export async function setEquippableList(
+    api: ApiPromise,
+    issuerUri: string,
+    baseId: number,
+    slotId: number,
+    equippableList: "All" | "Empty" | { 'Custom': number[] }
+) {
+    const issuer = privateKey(issuerUri);
+    const equippable = api.createType('RmrkTraitsPartEquippableList', equippableList) as EquippableList;
+
+    const tx = api.tx.rmrkEquip.equippable(baseId, slotId, equippable);
+    const events = await executeTransaction(api, issuer, tx);
+
+    const equipListResult = extractRmrkEquipTxResult(events, 'EquippablesUpdated', (data) => {
+        return {
+            baseId: parseInt(data[0].toString(), 10),
+            slotId: parseInt(data[1].toString(), 10)
+        };
+    });
+
+    expect(equipListResult.success, 'Error: unable to update equippable list').to.be.true;
+    if (equipListResult.successData) {
+        const updateEvent = equipListResult.successData;
+
+        expect(updateEvent.baseId)
+            .to.be.equal(baseId, 'Error: invalid base ID from update equippable event');
+
+        expect(updateEvent.slotId)
+            .to.be.equal(slotId, 'Error: invalid base ID from update equippable event');
+    }
+
+    const fetchedEquippableList = await getEquippableList(api, baseId, slotId);
+
+    expect(fetchedEquippableList, 'Error: unable to fetch equippable list').to.be.not.null;
+    if (fetchedEquippableList) {
+        expect(fetchedEquippableList)
+            .to.be.deep.equal(equippableList, 'Error: invalid equippable list was set');
+    }
 }
 
 export async function addTheme(api: ApiPromise, issuerUri: string, baseId: number, themeObj: object) {

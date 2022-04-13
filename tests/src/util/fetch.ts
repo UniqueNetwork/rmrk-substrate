@@ -80,6 +80,53 @@ export async function getParts(api: ApiPromise, baseId: number): Promise<PartTyp
     );
 }
 
+export async function getEquippableList(
+    api: ApiPromise,
+    baseId: number,
+    slotId: number
+): Promise<"All" | "Empty" | { "Custom": number[] } | null> {
+    const parts = await getParts(api, baseId);
+
+    const part = parts.find((part) => {
+        if (part.isSlotPart) {
+            return part.asSlotPart.id.toNumber() === slotId;
+        } else {
+            return false;
+        }
+    });
+
+    if (part) {
+        const slot = part.asSlotPart;
+        if (slot.equippable.isCustom) {
+            return {
+                "Custom": slot.equippable.asCustom
+                            .toArray()
+                            .map((collectionId) => collectionId.toNumber())
+            };
+        } else if (slot.equippable.isAll) {
+            return "All";
+        } else {
+            return "Empty";
+        }
+    } else {
+        return null;
+    }
+}
+
+export async function getResourcePriorities(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number
+): Promise<Bytes[]> {
+    const prioritiesOpt = await api.query.rmrkCore.priorities(collectionId, nftId);
+
+    if (prioritiesOpt.isSome) {
+        return prioritiesOpt.unwrap().toArray();
+    } else {
+        return [];
+    }
+}
+
 export async function getThemeValue(
     api: ApiPromise,
     baseId: number,

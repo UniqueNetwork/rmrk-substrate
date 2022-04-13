@@ -33,6 +33,8 @@
     "testMintNft": "mocha --timeout 9999999 -r ts-node/register './src/mintNft.test.ts'",
     "testGetOwnedNfts": "mocha --timeout 9999999 -r ts-node/register './src/getOwnedNfts.test.ts'",
     "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
+    "testSetResourcePriorities": "mocha --timeout 9999999 -r ts-node/register './src/setResourcePriorities.test.ts'",
+    "testSetEquippableList": "mocha --timeout 9999999 -r ts-node/register './src/setEquippableList.test.ts'",
     "testSendNft": "mocha --timeout 9999999 -r ts-node/register './src/sendNft.test.ts'",
     "testAcceptNft": "mocha --timeout 9999999 -r ts-node/register './src/acceptNft.test.ts'",
     "polkadot-types-fetch-metadata": "curl -H 'Content-Type: application/json' -d '{\"id\":\"1\", \"jsonrpc\":\"2.0\", \"method\": \"state_getMetadata\", \"params\":[]}' http://localhost:9933 > src/interfaces/metadata.json",
