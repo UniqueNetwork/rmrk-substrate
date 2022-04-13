@@ -74,5 +74,33 @@ describe("Integration test: mint new NFT", () => {
         );
     });
 
+    it("mint NFT with recipient and roalty", async () => {
+        const owner = alice;
+        const collectionMetadata = 'mintingCollectionMetadata';
+        const collectionMax = null;
+        const collectionSymbol = 'mintingCollectionSymbol';
+        const recipientUri = bob;
+        const royalty = 70000;
+        const nftMetadata = 'recipient-royalty-NFT-test-metadata';
+
+        let collectionId = await createCollection(
+            api,
+            alice,
+            collectionMetadata,
+            collectionMax,
+            collectionSymbol
+        );
+
+        await mintNft(
+            api,
+            alice,
+            owner,
+            collectionId,
+            nftMetadata,
+            recipientUri,
+            royalty
+        );
+    });
+
     after(() => { api.disconnect(); });
 });
