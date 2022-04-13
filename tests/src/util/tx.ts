@@ -1,30 +1,23 @@
 import { ApiPromise } from "@polkadot/api";
-import {
-    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
-    RmrkTraitsPartPartType as PartType,
-    RmrkTraitsTheme as Theme
-} from "@polkadot/types/lookup";
 import type { Vec } from '@polkadot/types-codec';
+import {
+  RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
+  RmrkTraitsPartPartType as PartType,
+  RmrkTraitsTheme as Theme
+} from "@polkadot/types/lookup";
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
 import {
-    makeNftOwner,
-    extractRmrkCoreTxResult,
-    extractRmrkEquipTxResult,
-    isTxResultSuccess,
-} from "./helpers";
-import {
-    getCollectionsCount,
-    getCollection,
-    getNft,
-    getPendingNft,
-    getBase,
-    getParts,
-    getThemeValue,
-    NftIdTuple
+  getBase, getCollection, getCollectionsCount, getNft, getParts, getPendingNft, getThemeValue,
+  NftIdTuple
 } from "./fetch";
-import chaiAsPromised from 'chai-as-promised';
-import chai from 'chai';
+import {
+  extractRmrkCoreTxResult,
+  extractRmrkEquipTxResult,
+  isTxResultSuccess, makeNftOwner
+} from "./helpers";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -130,20 +123,6 @@ export async function negativeDeleteCollection(
     await expect(executeTransaction(api, issuer, tx)).to.be.rejected;
 
     return 0;
-}
-
-export async function negativeChangeIssuer(
-    api: ApiPromise,
-    issuerUri: string,
-    collectionId: number,
-    newIssuer: string
-) {
-    const alice = privateKey(issuerUri);
-    const bob = privateKey(newIssuer);
-    const tx = api.tx.rmrkCore.changeIssuer(collectionId, bob.address);
-    await expect(executeTransaction(api, alice, tx)).to.be.rejectedWith(
-        /rmrkCore.NoPermission/
-    );
 }
 
 export async function mintNft(

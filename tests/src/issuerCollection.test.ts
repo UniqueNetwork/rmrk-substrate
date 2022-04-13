@@ -1,8 +1,8 @@
 import { getApiConnection } from "./substrate/substrate-api";
+import { expectTxFailure } from "./util/helpers";
 import {
-  createCollection,
   changeIssuer,
-  negativeChangeIssuer,
+  createCollection,
 } from "./util/tx";
 
 describe("Integration test: collection issuer", () => {
@@ -14,7 +14,7 @@ describe("Integration test: collection issuer", () => {
     api = await getApiConnection();
   });
 
-  it("change collection issuer", async () => {
+  it("Change collection issuer", async () => {
     await createCollection(
       api,
       Alice,
@@ -26,12 +26,26 @@ describe("Integration test: collection issuer", () => {
     });
   });
 
-  it("[negative] change collection issuer", async () => {
+  it("[Negative] Change not an owner NFT collection issuer", async () => {
     await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
       async (collectionId) => {
-        await negativeChangeIssuer(api, Alice, collectionId, Bob);
+        const tx = changeIssuer(api, Alice, collectionId, Bob);
+        await expectTxFailure(/rmrkCore.NoPermission/, tx);
       }
     );
+  });
+
+  it("[Negative] Change non-existigit NFT collection issuer", async () => {
+    await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    ).then(async () => {
+      const tx = changeIssuer(api, Alice, 99999, Bob);
+      await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+    });
   });
 
   after(() => {
