@@ -1,11 +1,10 @@
 import { ApiPromise } from "@polkadot/api";
 import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
-  RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
-  RmrkTraitsPartPartType as PartType,
-  RmrkTraitsPartEquippableList as EquippableList,
-  RmrkTraitsTheme as Theme
+  RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner, RmrkTraitsPartEquippableList as EquippableList, RmrkTraitsPartPartType as PartType, RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
 import {
@@ -25,8 +24,6 @@ import {
   extractRmrkCoreTxResult,
   extractRmrkEquipTxResult, isNftOwnedBy, isTxResultSuccess, makeNftOwner
 } from "./helpers";
-import chaiAsPromised from 'chai-as-promised';
-import chai from 'chai';
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -615,4 +612,19 @@ export async function setPropertyCollection(
   const fetchedValueOpt = await getPropertyValue(api, collectionId, null, key);
   const fetchedValue = fetchedValueOpt.unwrap();
   expect(fetchedValue.eq(value)).to.be.true;
+}
+
+export async function burnNft(
+  api: ApiPromise,
+  nftId: number,
+  collectionId: number,
+  issuerUri: string
+) {
+  const issuer = privateKey(issuerUri);
+  const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
+  const events = await executeTransaction(api, issuer, tx);
+  expect(isTxResultSuccess(events)).to.be.true;
+  
+  const nftBurned = await getNft(api, collectionId, nftId);
+  expect(nftBurned.isSome).to.be.false;
 }
