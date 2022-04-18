@@ -11,52 +11,77 @@
 
 ### Get last collection index (get collections count)
 The frontend can fetch and show the overall collection's count
-| `lastCollectionIdx() -> CollectionId` |
+```rust
+lastCollectionIdx() -> CollectionId
+```
 
 ### Get collection by id (similar to Unique)
 The frontend can fetch and show the collection info
-| `collectionById(collectionId: CollectionId) -> Option<CollectionInfo>` |
+```rust
+collectionById(collectionId: CollectionId) -> Option<CollectionInfo>
+```
 
 ### Get owned NFTs within a collection (similar to Unique)
 The frontend can fetch all NFTs within a collection owned by a specific user
-| `accountTokens(accountId: AccountId, collectionId: CollectionId) -> Vec<NftId>` |
+```rust
+accountTokens(accountId: AccountId, collectionId: CollectionId) -> Vec<NftId>
+```
 
 ### Get NFT info by id
 The frontent can fetch and show NFT info
-| `nftById(collectionId: CollectionId, nftId: NftId) -> Option<NftInfo>` |
+```rust
+nftById(collectionId: CollectionId, nftId: NftId) -> Option<NftInfo>
+```
 
 > NOTE: There is no need for `isPendingNft` since the RMRK team is [going to](https://github.com/rmrk-team/rmrk-substrate/issues/109)
 add `pending` flag to the `NftInfo`.
 
 ### Get property keys' values
 The frontend can fetch several property key values at once
-| `collectionProperties(collectionId: CollectionId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>` |
-| `nftProperties(collectionId: CollectionId, nftId: NftId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>` |
+```rust
+collectionProperties(collectionId: CollectionId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+
+nftProperties(collectionId: CollectionId, nftId: NftId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+```
 
 ### Get NFT children
 The frotnend can fetch chlidren of an NFT
-| `nftChildren(collectionId: CollectionId, nftId: NftId) -> Vec<(CollectionId, NftId)>` |
+```rust
+nftChildren(collectionId: CollectionId, nftId: NftId) -> Vec<(CollectionId, NftId)>
+```
 
 ### Get NFT Resources
 The frontend can fetch NFT resources (e.g. to retreive BaseId from a resource)
-| `nftResources(collectionId: CollectionId, nftId: NftId) -> Vec<ResourceInfo>` |
+```rust
+nftResources(collectionId: CollectionId, nftId: NftId) -> Vec<ResourceInfo>
+```
 
 ### Get NFT Resource Priorities
 The frontend can fetch NFT resource priorities
-| `nftResourcePriorities(collectionId: CollectionId, nftId: NftId) -> Vec<Bytes /* resourceId */>` |
+```rust
+nftResourcePriorities(collectionId: CollectionId, nftId: NftId) -> Vec<Bytes /* resourceId */>
+```
 
 ### Get NFT Base
 The frotnend can fetch the NFT Base info
-| `base(baseId: BaseId) -> Option<BaseInfo>`
+```rust
+base(baseId: BaseId) -> Option<BaseInfo>
+```
 
 ### Get Base parts
 The frontend can fetch all Base's parts
-| `baseParts(baseId: BaseId) -> Vec<PartType>`
+```rust
+baseParts(baseId: BaseId) -> Vec<PartType>
+```
 
 ### Get Base Theme names
 The frontend can fetch all Base's theme names
-| `themeNames(baseId: BaseId) -> Vec<Bytes>` |
+```rust
+themeNames(baseId: BaseId) -> Vec<Bytes>
+```
 
 ### Get Base Theme
 The frontend can fetch Base's Theme key values
-| `theme(baseId: BaseId, themeName: Bytes, filterKeys: Option<Vec<Bytes>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>` |
+```rust
+theme(baseId: BaseId, themeName: Bytes, filterKeys: Option<Vec<Bytes>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+```
