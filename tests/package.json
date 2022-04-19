@@ -27,7 +27,6 @@
     "lint": "eslint --ext .ts,.js src/",
     "fix": "eslint --ext .ts,.js src/ --fix",
     "test": "mocha --timeout 9999999 -r ts-node/register './src/*.test.ts'",
-    "test1": "mocha --timeout 9999999 -r ts-node/register './src/burnNft.test.ts'",
     "testAddTheme": "mocha --timeout 9999999 -r ts-node/register './src/addTheme.test.ts'",
     "testCreateBase": "mocha --timeout 9999999 -r ts-node/register './src/createBase.test.ts'",
     "testCreateCollection": "mocha --timeout 9999999 -r ts-node/register './src/createCollection.test.ts'",

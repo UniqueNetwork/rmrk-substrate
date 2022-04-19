@@ -37,9 +37,7 @@ describe("Integration test: lock collection", () => {
       "test-symbol"
     ).then(async (collectionId) => {
       const tx = lockCollection(api, Bob, collectionId);
-      await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
-
-      // await lockCollection(api, Alice, collectionId);
+      await expectTxFailure(/rmrkCore.NoPermission/, tx);
     });
   });
 

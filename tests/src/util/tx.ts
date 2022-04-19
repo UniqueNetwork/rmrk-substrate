@@ -585,9 +585,9 @@ export async function lockCollection(
   collectionId: number,
   max: number = 0
 ) {
-  const alice = privateKey(issuerUri);
+  const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.lockCollection(collectionId);
-  const events = await executeTransaction(api, alice, tx);
+  const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 
   await getCollection(api, collectionId).then((collectionOption) => {
@@ -624,7 +624,7 @@ export async function burnNft(
   const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
   const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
-  
+
   const nftBurned = await getNft(api, collectionId, nftId);
   expect(nftBurned.isSome).to.be.false;
 }
