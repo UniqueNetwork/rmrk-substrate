@@ -17,6 +17,7 @@ import {
   getPendingNft,
   getPropertyValue,
   getResourcePriorities,
+  getResources,
   getThemeValue,
   NftIdTuple
 } from "./fetch";
@@ -627,4 +628,32 @@ export async function burnNft(
 
   const nftBurned = await getNft(api, collectionId, nftId);
   expect(nftBurned.isSome).to.be.false;
+}
+
+export async function addNftResource(
+  api: ApiPromise,
+  nftId: number,
+  resourceId: string,
+  collectionId: number,
+  issuerUri: string
+) {
+  const issuer = privateKey(issuerUri);
+  const tx = api.tx.rmrkCore.addResource(
+    collectionId,
+    nftId,
+    resourceId,
+    null,
+    null,
+    "meta",
+    null,
+    null,
+    null,
+    null
+  );
+  const events = await executeTransaction(api, issuer, tx);
+  expect(isTxResultSuccess(events)).to.be.true;
+
+  const resource = await getResources(api, collectionId, nftId, resourceId);
+  // const resourceOption = resource.unwrap();
+  // expect(resourceOption.pending).to.be.false;
 }

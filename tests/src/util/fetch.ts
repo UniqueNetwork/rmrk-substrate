@@ -135,3 +135,16 @@ export async function getThemeValue(
 ): Promise<Option<Bytes>> {
     return (await api.query.rmrkEquip.themes(baseId, themeId, key)) as Option<Bytes>;
 }
+
+export async function getResources(
+  api: ApiPromise,
+  collectionId: number,
+  nftId: number,
+  resourceId: string
+): Promise<Option<any>> {
+  return (await api.query.rmrkCore.resources(
+    collectionId,
+    nftId,
+    resourceId
+  )) as any as Option<Bytes>;
+}
