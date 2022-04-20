@@ -83,5 +83,5 @@ themeNames(baseId: BaseId) -> Vec<Bytes>
 ### Get Base Theme
 The frontend can fetch Base's Theme key values
 ```rust
-theme(baseId: BaseId, themeName: Bytes, filterKeys: Option<Vec<Bytes>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+theme(baseId: BaseId, themeName: Bytes, filterKeys: Option<Vec<Bytes>>) -> Option<RmrkTraitsTheme>
 ```
