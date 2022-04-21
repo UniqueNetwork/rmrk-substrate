@@ -11,7 +11,7 @@ edition = "2021"
 targets = ['x86_64-unknown-linux-gnu']
 
 [dependencies]
-serde = { version = "1.0.111", default-features = false, features = ["derive"] }
+serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
@@ -23,6 +23,8 @@ frame-system = { default-features = false, version = "4.0.0-dev", git = "https:/
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", optional = true }
 
 pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+
+derivative = { version = "2.2.0", features = ["use_core"] }
 
 [dev-dependencies]
 sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
@@ -38,6 +40,7 @@ std = [
 	"frame-system/std",
 	"frame-benchmarking/std",
     "pallet-balances/std",
+	"sp-std/std",
 ]
 
 

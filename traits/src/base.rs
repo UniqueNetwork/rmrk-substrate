@@ -6,11 +6,13 @@ use crate::primitives::{BaseId, SlotId};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
-use sp_std::vec::Vec;
+use sp_std::{vec::Vec, marker::PhantomData};
+use frame_support::traits::Get;
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct BaseInfo<AccountId, BoundedString> {
+#[scale_info(skip_type_params(StringLimit))]
+pub struct BaseInfo<AccountId, BoundedString, StringLimit: Get<u32>> {
 	/// Original creator of the Base
 	pub issuer: AccountId,
 	/// Specifies how an NFT should be rendered, ie "svg"
@@ -19,10 +21,12 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	pub symbol: BoundedString,
 	/// Parts, full list of both Fixed and Slot parts
 	pub parts: Vec<PartType<BoundedString>>,
+
+	pub _marker: PhantomData<StringLimit>,
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString, StringLimit: Get<u32>> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
@@ -45,6 +49,6 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedString>,
+		theme: Theme<StringLimit>,
 	) -> Result<(), DispatchError>;
 }

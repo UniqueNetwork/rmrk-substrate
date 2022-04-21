@@ -3,14 +3,17 @@ use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
 use sp_std::cmp::Eq;
 
-use frame_support::pallet_prelude::*;
+use frame_support::{traits::Get, BoundedVec};
 use sp_runtime::Permill;
 
 use crate::primitives::*;
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
-use serde::{Deserialize, Serialize};
+use serde::{Serialize, Deserialize};
+
+#[cfg(feature = "std")]
+use crate::bounded_serde;
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -20,17 +23,21 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 }
 
 /// Nft info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize, Deserialize))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct NftInfo<AccountId, BoundedString> {
+#[scale_info(skip_type_params(StringLimit))]
+pub struct NftInfo<AccountId, StringLimit: Get<u32>> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
 	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
 	/// The user account which receives the royalty
 	pub recipient: AccountId,
 	/// Royalty in per mille (1/1000)
 	pub royalty: Permill,
+
 	/// Arbitrary data about an instance, e.g. IPFS hash
-	pub metadata: BoundedString,
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	pub metadata: BoundedVec<u8, StringLimit>,
+
 	/// Equipped state
 	pub equipped: bool,
 }
