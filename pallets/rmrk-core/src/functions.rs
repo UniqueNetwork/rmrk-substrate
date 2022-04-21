@@ -493,6 +493,17 @@ impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
+	pub fn iterate_properties(collection_id: CollectionId, nft_id: Option<NftId>) -> Vec<PropertyInfoOf<T>> {
+		Properties::<T>::iter_prefix((collection_id, nft_id))
+			.map(|(key, value)| {
+				PropertyInfoOf::<T> {
+					key,
+					value
+				}
+			})
+			.collect()
+	}
+
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
 	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
 	/// as it must be wide enough to keep the size of the prefix as well as the `collection_id`

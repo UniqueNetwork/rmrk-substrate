@@ -8,11 +8,12 @@ use rmrk_traits::primitives::*;
 pub type Result<T> = core::result::Result<T, DispatchError>;
 
 sp_api::decl_runtime_apis! {
-	pub trait RmrkApi<AccountId, CollectionInfo, NftInfo, Theme>
+	pub trait RmrkApi<AccountId, CollectionInfo, NftInfo, PropertyInfo, Theme>
 	where
 		AccountId: Encode,
 		CollectionInfo: Decode,
 		NftInfo: Decode,
+		PropertyInfo: Decode,
 		Theme: Decode,
 	{
 		fn last_collection_idx() -> Result<CollectionId>;
@@ -22,6 +23,10 @@ sp_api::decl_runtime_apis! {
 		fn nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Result<Option<NftInfo>>;
 
 		fn account_tokens(account_id: AccountId, collection_id: CollectionId) -> Result<Vec<NftId>>;
+
+		fn collection_properties(collection_id: CollectionId) -> Result<Vec<PropertyInfo>>;
+
+		fn nft_properties(collection_id: CollectionId, nft_id: NftId) -> Result<Vec<PropertyInfo>>;
 
 		fn theme_names(base_id: BaseId) -> Result<Vec<Vec<u8>>>;
 

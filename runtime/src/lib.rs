@@ -13,8 +13,13 @@ use sp_runtime::{
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
+	DispatchError,
 };
-use sp_std::prelude::*;
+use sp_std::{
+	prelude::*,
+	collections::btree_set::BTreeSet
+};
+
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
@@ -22,7 +27,7 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{KeyOwnerProofSystem, Randomness, StorageInfo, tokens::nonfungibles::*},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
@@ -35,6 +40,10 @@ use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
+
+use rmrk_traits::primitives::*;
+use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, PropertyInfoOf};
+use pallet_rmrk_equip::ThemeOf;
 
 /// Import the template pallet.
 pub use pallet_template;
@@ -305,6 +314,8 @@ impl pallet_template::Config for Runtime {
 parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
+
+	#[derive(PartialEq, Eq)]
 	pub const CollectionSymbolLimit: u32 = 100;
 }
 
@@ -335,7 +346,10 @@ parameter_types! {
 	pub const UniquesMetadataDepositBase: Balance = 100 * DOLLARS;
 	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
 	pub const DepositPerByte: Balance = DOLLARS;
+
+	#[derive(PartialEq, Eq)]
 	pub const UniquesStringLimit: u32 = 128;
+
 	pub const MaxPartsPerBase: u32 = 100;
 	pub const MaxPropertiesPerTheme: u32 = 100;
 }
@@ -423,6 +437,73 @@ pub type Executive = frame_executive::Executive<
 >;
 
 impl_runtime_apis! {
+	impl rmrk_rpc::RmrkApi<
+		Block,
+		AccountId,
+		CollectionInfoOf<Runtime>,
+		InstanceInfoOf<Runtime>,
+		PropertyInfoOf<Runtime>,
+		ThemeOf<Runtime>
+	> for Runtime
+	{
+		fn last_collection_idx() -> rmrk_rpc::Result<CollectionId> {
+			Ok(RmrkCore::collection_index())
+		}
+
+		fn collection_by_id(id: CollectionId) -> rmrk_rpc::Result<Option<CollectionInfoOf<Runtime>>> {
+			Ok(RmrkCore::collections(id))
+		}
+
+		fn nft_by_id(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Option<InstanceInfoOf<Runtime>>> {
+			Ok(RmrkCore::nfts(collection_id, nft_id))
+		}
+
+		fn account_tokens(account_id: AccountId, collection_id: CollectionId) -> rmrk_rpc::Result<Vec<NftId>> {
+			Ok(Uniques::owned_in_class(&collection_id, &account_id).collect())
+		}
+
+		fn collection_properties(collection_id: CollectionId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
+			Ok(RmrkCore::iterate_properties(collection_id, None))
+		}
+
+		fn nft_properties(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
+			Ok(RmrkCore::iterate_properties(collection_id, Some(nft_id)))
+		}
+
+		fn theme_names(base_id: BaseId) -> rmrk_rpc::Result<Vec<Vec<u8>>> {
+			let names = RmrkEquip::iterate_theme_names(base_id)
+				.map(|name| name.into())
+				.collect();
+
+			Ok(names)
+		}
+
+		fn theme(
+			base_id: BaseId,
+			theme_name: Vec<u8>,
+			filter_keys: Option<Vec<Vec<u8>>>
+		) -> rmrk_rpc::Result<Option<ThemeOf<Runtime>>> {
+			use pallet_rmrk_equip::StringLimitOf;
+
+			let theme_name: StringLimitOf<Self> = theme_name.try_into()
+				.map_err(|_| DispatchError::Other("Can't read theme_name"))?;
+
+			let filter_keys = match filter_keys {
+				Some(filter_keys) => {
+					let tree = filter_keys.into_iter().map(|filter_keys| -> rmrk_rpc::Result<StringLimitOf<Self>> {
+						filter_keys.try_into().map_err(|_| DispatchError::Other("Can't read filter key"))
+					}).collect::<rmrk_rpc::Result<BTreeSet<_>>>()?;
+
+					Some(tree)
+				},
+				None => None
+			};
+
+			let theme = RmrkEquip::get_theme(base_id, theme_name, filter_keys);
+			Ok(theme)
+		}
+	}
+
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
 			VERSION

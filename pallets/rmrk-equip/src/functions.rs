@@ -1,5 +1,8 @@
 use super::*;
 
+use sp_std::collections::btree_set::BTreeSet;
+use rmrk_traits::ThemeProperty;
+
 impl<T: Config> Pallet<T> {
 	/// Helper function for getting next base ID
 	/// Currently, BaseId is auto-incremented from zero, may be worth changing
@@ -26,9 +29,51 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
+
+	pub fn iterate_theme_names(base_id: BaseId) -> impl Iterator<Item=StringLimitOf<T>> {
+		Themes::<T>::iter_key_prefix((base_id,))
+			.map(|(theme_name, ..)| theme_name.clone())
+	}
+
+	pub fn get_theme(
+		base_id: BaseId,
+		theme_name: StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>
+	) -> Option<ThemeOf<T>> {
+		let properties: Vec<_> = Self::iterate_theme_kv(base_id, &theme_name, filter_keys);
+
+		if properties.is_empty() {
+			None
+		} else {
+			Some(ThemeOf::<T> {
+				name: theme_name,
+				properties,
+			})
+		}
+	}
+
+	fn iterate_theme_kv(
+		base_id: BaseId,
+		theme_name: &StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>
+	) -> Vec<ThemePropertyOf<T>> {
+		Themes::<T>::iter_prefix((base_id, theme_name.clone()))
+			.filter(|(key, _)| match &filter_keys {
+				Some (filter_keys) => filter_keys.contains(&key),
+				None => true
+			})
+			.map(|(key, value)| {
+				ThemeProperty {
+					key,
+					value,
+					inherit: None
+				}
+			})
+			.collect()
+	}
 }
 
-impl<T: Config> Base<T::AccountId, CollectionId, NftId, StringLimitOf<T>> for Pallet<T>
+impl<T: Config> Base<T::AccountId, CollectionId, NftId, StringLimitOf<T>, <T as pallet_uniques::Config>::StringLimit> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -58,7 +103,13 @@ where
 				},
 			}
 		}
-		let base = BaseInfo { issuer, base_type, symbol, parts };
+		let base = BaseInfo {
+			issuer,
+			base_type,
+			symbol,
+			parts,
+			_marker: sp_std::marker::PhantomData,
+		};
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}
@@ -308,7 +359,7 @@ where
 	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 	/// Themes are stored in the Themes storage
 	/// A "default" theme is required prior to adding other Themes.
-	/// 
+	///
 	/// Parameters:
 	/// - issuer: The caller of the function, must be issuer of the base
 	/// - base_id: The Base containing the Theme to be updated
@@ -320,7 +371,7 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		theme: Theme<<T as pallet_uniques::Config>::StringLimit>,
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

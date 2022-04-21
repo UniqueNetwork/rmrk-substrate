@@ -9,7 +9,9 @@ pub mod property;
 pub mod resource;
 pub mod theme;
 pub mod bounded_serde;
+pub mod phantom_type;
 
+pub use phantom_type::PhantomType;
 pub use base::{Base, BaseInfo};
 pub use part::{EquippableList, FixedPart, PartType, SlotPart};
 pub use theme::{Theme, ThemeProperty};
