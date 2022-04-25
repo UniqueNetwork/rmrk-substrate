@@ -7,7 +7,7 @@
 * `BaseInfo`: `traits/src/base.rs`
 * `PartType`: `traits/src/part.rs`
 * `Theme`: `traits/src/theme.rs`
-* `Bytes == BoundedVec<u8, /some limit/>`
+* `Bytes == Vec<u8>`
 
 ### Get last collection index (get collections count)
 The frontend can fetch and show the overall collection's count
@@ -39,15 +39,15 @@ add `pending` flag to the `NftInfo`.
 ### Get property keys' values
 The frontend can fetch several property key values at once
 ```rust
-collectionProperties(collectionId: CollectionId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+collectionProperties(collectionId: CollectionId, filterKeys: Option<Vec<u32>>) -> Vec<Property>
 
-nftProperties(collectionId: CollectionId, nftId: NftId, filterKeys: Option<Vec<u32>>) -> Vec<(/* key: */ Bytes, /* value: */ Bytes)>
+nftProperties(collectionId: CollectionId, nftId: NftId, filterKeys: Option<Vec<u32>>) -> Vec<Property>
 ```
 
 ### Get NFT children
 The frotnend can fetch chlidren of an NFT
 ```rust
-nftChildren(collectionId: CollectionId, nftId: NftId) -> Vec<(CollectionId, NftId)>
+nftChildren(collectionId: CollectionId, nftId: NftId) -> Vec<NftChild>
 ```
 
 ### Get NFT Resources
