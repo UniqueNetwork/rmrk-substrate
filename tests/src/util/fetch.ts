@@ -1,83 +1,70 @@
 import { ApiPromise } from '@polkadot/api';
-import type { Option, Bytes, Vec, u32 } from '@polkadot/types-codec';
-import { ITuple } from "@polkadot/types-codec/types";
+import type { Option, Bytes } from '@polkadot/types-codec';
 import type {
     RmrkTraitsCollectionCollectionInfo as Collection,
     RmrkTraitsNftNftInfo as Nft,
+    RmrkTraitsResourceResourceInfo as Resource,
     RmrkTraitsBaseBaseInfo as Base,
-    RmrkTraitsPartPartType as PartType
+    RmrkTraitsPartPartType as PartType,
+    RmrkTraitsNftNftChild as NftChild,
+    RmrkTraitsTheme as Theme,
+    RmrkTraitsPropertyPropertyInfo as Property,
 } from '@polkadot/types/lookup';
-import { IKeyringPair } from '@polkadot/types/types';
+import '../interfaces/augment-api';
 import '../interfaces/augment-api-query';
-import chaiAsPromised from 'chai-as-promised';
-import chai from 'chai';
 import privateKey from '../substrate/privateKey';
-
-chai.use(chaiAsPromised);
-const expect = chai.expect;
 
 export type NftIdTuple = [number, number];
 
 export async function getCollectionsCount(api: ApiPromise): Promise<number> {
-    return (await api.query.rmrkCore.collectionIndex()).toNumber();
+    return (await api.rpc.rmrk.lastCollectionIdx()).toNumber();
 }
 
 export async function getCollection(api: ApiPromise, id: number): Promise<Option<Collection>> {
-    return api.query.rmrkCore.collections(id);
+    return api.rpc.rmrk.collectionById(id);
 }
 
-export async function getOwnedNfts(api: ApiPromise, ownerUri: string): Promise<NftIdTuple[]> {
-    const uniquesApi = api.query.uniques;
+export async function getOwnedNfts(
+    api: ApiPromise,
+    ownerUri: string,
+    collectionId: number
+): Promise<number[]> {
     const owner = privateKey(ownerUri);
 
-    return await Promise.all(
-        (await uniquesApi.account.keys(owner.address)).map(async ({args: [_, collectionId, nftId]}) => {
-            return [collectionId.toNumber(), nftId.toNumber()];
-        })
-    );
+    return (await api.rpc.rmrk.accountTokens(owner.address, collectionId))
+        .map((value) => value.toNumber())
 }
 
 export async function getNft(api: ApiPromise, collectionId: number, nftId: number): Promise<Option<Nft>> {
-    return api.query.rmrkCore.nfts(collectionId, nftId);
+    return api.rpc.rmrk.nftById(collectionId, nftId);
 }
 
 export async function getPendingNft(api: ApiPromise, collectionId: number, nftId: number): Promise<Option<Nft>> {
     return api.query.rmrkCore.pendingNfts(collectionId, nftId);
 }
 
-export async function getPropertyValue(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number | null,
-    key: string
-): Promise<Option<Bytes>> {
-    return (await api.query.rmrkCore.properties(collectionId, nftId, key)) as Option<Bytes>;
+export async function getCollectionProperties(api: ApiPromise, collectionId: number): Promise<Property[]> {
+    return (await api.rpc.rmrk.collectionProperties(collectionId)).toArray();
+}
+
+export async function getNftProperties(api: ApiPromise, collectionId: number, nftId: number): Promise<Property[]> {
+    return (await api.rpc.rmrk.nftProperties(collectionId, nftId)).toArray();
 }
 
 export async function getChildren(
     api: ApiPromise,
     collectionId: number,
     nftId: number
-): Promise<NftIdTuple[]> {
-    const children = await api.query.rmrkCore.children([collectionId, nftId]) as Vec<ITuple<[u32, u32]>>;
-
-    return children.map((tuple) => {
-        return [tuple[0].toNumber(), tuple[1].toNumber()];
-    });
+): Promise<NftChild[]> {
+    return (await api.rpc.rmrk.nftChildren(collectionId, nftId)).toArray();
 }
 
 export async function getBase(api: ApiPromise, baseId: number): Promise<Option<Base>> {
-    return (await api.query.rmrkEquip.bases(baseId)) as Option<Base>;
+    return api.rpc.rmrk.base(baseId);
 }
 
 export async function getParts(api: ApiPromise, baseId: number): Promise<PartType[]> {
-    const equipApi = api.query.rmrkEquip;
-
-    return await Promise.all(
-        (await equipApi.parts.keys(baseId)).map(async ({args: [_, partId]}) => {
-            return ((await equipApi.parts(baseId, partId)) as Option<PartType>).unwrap()
-        })
-    );
+    return (await api.rpc.rmrk.baseParts(baseId)).toArray();
 }
 
 export async function getEquippableList(
@@ -118,33 +105,27 @@ export async function getResourcePriorities(
     collectionId: number,
     nftId: number
 ): Promise<Bytes[]> {
-    const prioritiesOpt = await api.query.rmrkCore.priorities(collectionId, nftId);
-
-    if (prioritiesOpt.isSome) {
-        return prioritiesOpt.unwrap().toArray();
-    } else {
-        return [];
-    }
+    return (await api.rpc.rmrk.nftResourcePriorities(collectionId, nftId)).toArray();
 }
 
-export async function getThemeValue(
+export async function getThemeNames(api: ApiPromise, baseId: number): Promise<string[]> {
+    return (await api.rpc.rmrk.themeNames(baseId))
+        .map((name) => name.toUtf8());
+}
+
+export async function getTheme(
     api: ApiPromise,
     baseId: number,
-    themeId: Bytes,
-    key: Bytes
-): Promise<Option<Bytes>> {
-    return (await api.query.rmrkEquip.themes(baseId, themeId, key)) as Option<Bytes>;
+    themeName: string,
+    keys: string[] | null = null
+): Promise<Option<Theme>> {
+    return api.rpc.rmrk.themes(baseId, themeName, keys);
 }
 
 export async function getResources(
   api: ApiPromise,
   collectionId: number,
-  nftId: number,
-  resourceId: string
-): Promise<Option<any>> {
-  return (await api.query.rmrkCore.resources(
-    collectionId,
-    nftId,
-    resourceId
-  )) as any as Option<Bytes>;
+  nftId: number
+): Promise<Resource[]> {
+  return (await api.rpc.rmrk.nftResources(collectionId, nftId)).toArray();
 }
