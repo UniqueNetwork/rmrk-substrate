@@ -56,12 +56,11 @@ describe("Integration test: get owned NFTs", () => {
             )
         ];
 
-        const ownedNfts = await getOwnedNfts(api, alice);
+        const ownedNfts = await getOwnedNfts(api, alice, collectionId);
 
         const isFound = (nftId: number) => {
-            return ownedNfts.find(([ownedNftColId, ownedNftId]) => {
-                return ownedNftColId === collectionId
-                && ownedNftId === nftId
+            return ownedNfts.find((ownedNftId) => {
+                return ownedNftId === nftId
             }) !== undefined;
         };
 
