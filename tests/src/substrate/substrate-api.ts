@@ -23,7 +23,7 @@ import {IKeyringPair} from '@polkadot/types/types';
 import config from '../config';
 import promisifySubstrate from './promisify-substrate';
 import {ApiOptions, SubmittableExtrinsic, ApiTypes} from '@polkadot/api/types';
-
+import * as defs from '../interfaces/definitions';
 
 function defaultApiOptions(): ApiOptions {
   const wsProvider = new WsProvider(config.substrateUrl);
@@ -34,6 +34,9 @@ function defaultApiOptions(): ApiOptions {
         payload: {},
       },
     },
+    rpc: {
+      rmrk: defs.rmrk.rpc
+    }
   };
 }
 

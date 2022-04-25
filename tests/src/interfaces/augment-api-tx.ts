@@ -150,6 +150,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       acceptResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resourceId: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Bytes]>;
       /**
+       * accept the removal of a resource of an existing NFT
+       **/
+      acceptResourceRemoval: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resourceId: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Bytes]>;
+      /**
        * Create resource
        **/
       addResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resourceId: Bytes | string | Uint8Array, base: Option<u32> | null | object | string | Uint8Array, src: Option<Bytes> | null | object | string | Uint8Array, metadata: Option<Bytes> | null | object | string | Uint8Array, slot: Option<u32> | null | object | string | Uint8Array, license: Option<Bytes> | null | object | string | Uint8Array, thumb: Option<Bytes> | null | object | string | Uint8Array, parts: Option<Vec<u32>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Bytes, Option<u32>, Option<Bytes>, Option<Bytes>, Option<u32>, Option<Bytes>, Option<Bytes>, Option<Vec<u32>>]>;
@@ -194,6 +198,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `nft_id`: nft id of the nft to be accepted
        **/
       rejectNft: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32]>;
+      /**
+       * remove resource
+       **/
+      removeResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resourceId: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Bytes]>;
       /**
        * Transfers a NFT from an Account or NFT A to another Account or NFT B
        * 

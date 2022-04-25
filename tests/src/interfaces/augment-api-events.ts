@@ -89,6 +89,8 @@ declare module '@polkadot/api-base/types/events' {
       PropertySet: AugmentedEvent<ApiType, [u32, Option<u32>, Bytes, Bytes]>;
       ResourceAccepted: AugmentedEvent<ApiType, [u32, Bytes]>;
       ResourceAdded: AugmentedEvent<ApiType, [u32, Bytes]>;
+      ResourceRemoval: AugmentedEvent<ApiType, [u32, Bytes]>;
+      ResourceRemovalAccepted: AugmentedEvent<ApiType, [u32, Bytes]>;
       /**
        * Generic event
        **/
