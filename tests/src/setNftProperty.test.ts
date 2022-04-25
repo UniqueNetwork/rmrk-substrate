@@ -53,7 +53,6 @@ describe("Integration test: set NFT property", () => {
 
     it("set a property to nested NFT", async () => {
         const ownerAlice = alice;
-        const ownerBob = bob;
 
         const collectionId = await createTestCollection(alice);
         const parentNftId = await mintNft(api, alice, ownerAlice, collectionId, "prop-parent-nft");
@@ -68,7 +67,6 @@ describe("Integration test: set NFT property", () => {
 
     it("[negative] set a property to nested NFT (by not-root-owner)", async () => {
         const ownerAlice = alice;
-        const ownerBob = bob;
 
         const collectionId = await createTestCollection(alice);
         const parentNftId = await mintNft(api, alice, ownerAlice, collectionId, "prop-parent-nft");
