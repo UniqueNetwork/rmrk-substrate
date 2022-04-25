@@ -138,11 +138,11 @@ pub trait RmrkApiServer<
 
 	#[rpc(name = "rmrk_collectionProperties")]
 	/// Get collection properties
-	fn collection_properties(&self, collection_id: CollectionId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
+	fn collection_properties(&self, collection_id: CollectionId, filter_keys: Option<Vec<String>>, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
 
 	#[rpc(name = "rmrk_nftProperties")]
 	/// Get NFT properties
-	fn nft_properties(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
+	fn nft_properties(&self, collection_id: CollectionId, nft_id: NftId, filter_keys: Option<Vec<String>>, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
 
 	#[rpc(name = "rmrk_nftResources")]
 	/// Get NFT resources
@@ -214,8 +214,23 @@ where
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
 	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild>);
-	pass_method!(collection_properties(collection_id: CollectionId) -> Vec<PropertyInfo>);
-	pass_method!(nft_properties(collection_id: CollectionId, nft_id: NftId) -> Vec<PropertyInfo>);
+	pass_method!(
+		collection_properties(
+			collection_id: CollectionId,
+
+			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
+			filter_keys: Option<Vec<String>>
+		) -> Vec<PropertyInfo>
+	);
+	pass_method!(
+		nft_properties(
+			collection_id: CollectionId,
+			nft_id: NftId,
+
+			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
+			filter_keys: Option<Vec<String>>
+		) -> Vec<PropertyInfo>
+	);
 	pass_method!(nft_resources(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceInfo>);
 	pass_method!(nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceId>);
 	pass_method!(base(base_id: BaseId) -> Option<BaseInfo>);

@@ -6,6 +6,7 @@ use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
 	ArithmeticError,
 };
+use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
@@ -490,14 +491,23 @@ impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
-	pub fn iterate_properties(collection_id: CollectionId, nft_id: Option<NftId>) -> impl Iterator<Item=PropertyInfoOf<T>> {
+	pub fn query_properties(
+		collection_id: CollectionId,
+		nft_id: Option<NftId>,
+		filter_keys: Option<BTreeSet<BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>>>
+	) -> Vec<PropertyInfoOf<T>> {
 		Properties::<T>::iter_prefix((collection_id, nft_id))
+			.filter(|(key, _)| match &filter_keys {
+				Some(filter_keys) => filter_keys.contains(&key),
+				None => true
+			})
 			.map(|(key, value)| {
 				PropertyInfoOf::<T> {
 					key,
 					value
 				}
 			})
+			.collect()
 	}
 
 	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceInfoOf<T>> {

@@ -44,7 +44,7 @@ impl<T: Config> Pallet<T> {
 		theme_name: StringLimitOf<T>,
 		filter_keys: Option<BTreeSet<StringLimitOf<T>>>
 	) -> Option<ThemeOf<T>> {
-		let properties: Vec<_> = Self::iterate_theme_kv(base_id, &theme_name, filter_keys);
+		let properties: Vec<_> = Self::query_theme_kv(base_id, &theme_name, filter_keys);
 
 		if properties.is_empty() {
 			None
@@ -56,7 +56,7 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	fn iterate_theme_kv(
+	fn query_theme_kv(
 		base_id: BaseId,
 		theme_name: &StringLimitOf<T>,
 		filter_keys: Option<BTreeSet<StringLimitOf<T>>>

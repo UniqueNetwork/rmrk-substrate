@@ -2,6 +2,7 @@
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
 
+use frame_support::BoundedVec;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -436,6 +437,21 @@ pub type Executive = frame_executive::Executive<
 	AllPalletsWithSystem,
 >;
 
+fn option_filter_keys_to_set<StringLimit: frame_support::traits::Get<u32>>(
+	filter_keys: Option<Vec<rmrk_rpc::PropertyKey>>
+) -> rmrk_rpc::Result<Option<BTreeSet<BoundedVec<u8, StringLimit>>>> {
+	match filter_keys {
+		Some(filter_keys) => {
+			let tree = filter_keys.into_iter()
+				.map(|filter_keys| -> rmrk_rpc::Result<BoundedVec<u8, StringLimit>> {
+					filter_keys.try_into().map_err(|_| DispatchError::Other("Can't read filter key"))
+				}).collect::<rmrk_rpc::Result<BTreeSet<_>>>()?;
+			Ok(Some(tree))
+		},
+		None => Ok(None)
+	}
+}
+
 impl_runtime_apis! {
 	impl rmrk_rpc::RmrkApi<
 		Block,
@@ -477,12 +493,29 @@ impl_runtime_apis! {
 			Ok(children)
 		}
 
-		fn collection_properties(collection_id: CollectionId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
-			Ok(RmrkCore::iterate_properties(collection_id, None).collect())
+		fn collection_properties(
+			collection_id: CollectionId,
+			filter_keys: Option<Vec<rmrk_rpc::PropertyKey>>
+		) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
+			let nft_id = None;
+
+			let filter_keys = option_filter_keys_to_set::<<Self as pallet_uniques::Config>::KeyLimit>(
+				filter_keys
+			)?;
+
+			Ok(RmrkCore::query_properties(collection_id, nft_id, filter_keys))
 		}
 
-		fn nft_properties(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
-			Ok(RmrkCore::iterate_properties(collection_id, Some(nft_id)).collect())
+		fn nft_properties(
+			collection_id: CollectionId,
+			nft_id: NftId,
+			filter_keys: Option<Vec<rmrk_rpc::PropertyKey>>
+		) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
+			let filter_keys = option_filter_keys_to_set::<<Self as pallet_uniques::Config>::KeyLimit>(
+				filter_keys
+			)?;
+
+			Ok(RmrkCore::query_properties(collection_id, Some(nft_id), filter_keys))
 		}
 
 		fn nft_resources(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<ResourceInfoOf<Runtime>>> {
@@ -528,16 +561,9 @@ impl_runtime_apis! {
 			let theme_name: StringLimitOf<Self> = theme_name.try_into()
 				.map_err(|_| DispatchError::Other("Can't read theme_name"))?;
 
-			let filter_keys = match filter_keys {
-				Some(filter_keys) => {
-					let tree = filter_keys.into_iter().map(|filter_keys| -> rmrk_rpc::Result<StringLimitOf<Self>> {
-						filter_keys.try_into().map_err(|_| DispatchError::Other("Can't read filter key"))
-					}).collect::<rmrk_rpc::Result<BTreeSet<_>>>()?;
-
-					Some(tree)
-				},
-				None => None
-			};
+			let filter_keys = option_filter_keys_to_set::<<Self as pallet_uniques::Config>::StringLimit>(
+				filter_keys
+			)?;
 
 			let theme = RmrkEquip::get_theme(base_id, theme_name, filter_keys);
 			Ok(theme)
