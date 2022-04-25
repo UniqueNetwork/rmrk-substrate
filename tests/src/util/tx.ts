@@ -7,6 +7,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
+import '../interfaces/augment-api';
 import {
   getBase,
   getCollection,
@@ -15,15 +16,17 @@ import {
   getNft,
   getParts,
   getPendingNft,
-  getPropertyValue,
+  getCollectionProperties,
   getResourcePriorities,
+  getTheme,
+  NftIdTuple,
   getResources,
-  getThemeValue,
-  NftIdTuple
 } from "./fetch";
 import {
   extractRmrkCoreTxResult,
-  extractRmrkEquipTxResult, isNftOwnedBy, isTxResultSuccess, makeNftOwner
+  extractRmrkEquipTxResult, isNftOwnedBy, isTxResultSuccess, makeNftOwner,
+  isCollectionPropertyExists,
+  isNftPropertyExists
 } from "./helpers";
 
 chai.use(chaiAsPromised);
@@ -194,15 +197,10 @@ export async function setNftProperty(
             .to.be.true;
     }
 
-    const fetchedValueOpt = await getPropertyValue(api, collectionId, nftId, key);
-
-    expect(fetchedValueOpt.isSome, 'Error: Unable to fetch added NFT property')
-        .to.be.true;
-
-    const fetchedValue = fetchedValueOpt.unwrap();
-
-    expect(fetchedValue.eq(value), 'Error: Invalid NFT property value')
-        .to.be.true;
+    expect(
+        await isNftPropertyExists(api, collectionId, nftId, key, value),
+        'Error: NFT property is not found'
+    ).to.be.true;
 }
 
 export async function mintNft(
@@ -557,7 +555,13 @@ export async function setEquippableList(
     }
 }
 
-export async function addTheme(api: ApiPromise, issuerUri: string, baseId: number, themeObj: object) {
+export async function addTheme(
+    api: ApiPromise,
+    issuerUri: string,
+    baseId: number,
+    themeObj: object,
+    filterKeys: string[] | null = null
+) {
     const issuer = privateKey(issuerUri);
     const theme = api.createType('RmrkTraitsTheme', themeObj) as Theme;
 
@@ -566,18 +570,40 @@ export async function addTheme(api: ApiPromise, issuerUri: string, baseId: numbe
 
     expect(isTxResultSuccess(events), 'Error: Unable to add Theme').to.be.true;
 
-    theme.properties.forEach(async (property) => {
-        const valueOptional = await getThemeValue(api, baseId, theme.name, property.key);
+    const fetchedThemeOpt = await getTheme(api, baseId, theme.name.toUtf8(), null);
 
-        expect(
-            valueOptional.isSome,
-            `Error: unable to fetch key ${property.key} of theme ${theme.name}`
-        ).to.be.true;
+    expect(fetchedThemeOpt.isSome, 'Error: Unable to fetch theme').to.be.true;
 
-        const value = valueOptional.unwrap();
+    const fetchedTheme = fetchedThemeOpt.unwrap();
 
-        expect(value).to.be.equal(property.value, "Error: Invalid Theme value");
-    });
+    expect(theme.name.eq(fetchedTheme.name), 'Error: Invalid theme name').to.be.true;
+
+    for (var i = 0; i < theme.properties.length; i++) {
+        const property = theme.properties[i];
+        const propertyKey = property.key.toUtf8();
+
+        const propertyFoundCount = fetchedTheme.properties.filter(
+            (fetchedProp) => property.key.eq(fetchedProp.key)
+        ).length;
+
+        expect(propertyFoundCount > 1, `Error: Too many properties with key ${propertyKey} found`)
+            .to.be.false;
+
+        if (filterKeys) {
+            const isFiltered = fetchedTheme.properties.find(
+                (fetchedProp) => fetchedProp.key.eq(property.key)
+            ) === undefined;
+
+            if (isFiltered) {
+                expect(propertyFoundCount === 0, `Error: Unexpected filtered key ${propertyKey}`)
+                    .to.be.true;
+                continue;
+            }
+        }
+
+        expect(propertyFoundCount === 1, `Error: The property with key ${propertyKey} is not found`)
+            .to.be.true;
+    }
 }
 
 export async function lockCollection(
@@ -610,9 +636,8 @@ export async function setPropertyCollection(
   const events = await executeTransaction(api, alice, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 
-  const fetchedValueOpt = await getPropertyValue(api, collectionId, null, key);
-  const fetchedValue = fetchedValueOpt.unwrap();
-  expect(fetchedValue.eq(value)).to.be.true;
+  expect(await isCollectionPropertyExists(api, collectionId, key, value))
+    .to.be.true;
 }
 
 export async function burnNft(
@@ -653,7 +678,23 @@ export async function addNftResource(
   const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 
-  const resource = await getResources(api, collectionId, nftId, resourceId);
-  // const resourceOption = resource.unwrap();
-  // expect(resourceOption.pending).to.be.false;
+  const resources = await getResources(api, collectionId, nftId);
+
+  let resource = null;
+
+  for (var i = 0; i < resources.length; i++) {
+      const res = resources[i];
+
+      if (res.id.eq(resourceId)) {
+          resource = res;
+          break;
+      }
+  }
+
+  expect(resource !== null, 'Error: resource was not added').to.be.true;
+
+  if (resource) {
+      expect(resource.pending.isTrue, 'Error: added resource should not be added')
+        .to.be.false;
+  }
 }

@@ -1,10 +1,12 @@
 import { ApiPromise } from "@polkadot/api";
-import { RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner } from "@polkadot/types/lookup";
+import {
+    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
+    RmrkTraitsPropertyPropertyInfo as Property,
+} from "@polkadot/types/lookup";
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
-import { IKeyringPair } from '@polkadot/types/types';
 import privateKey from "../substrate/privateKey";
-import { NftIdTuple, getChildren, getOwnedNfts } from './fetch';
+import { NftIdTuple, getChildren, getOwnedNfts, getCollectionProperties, getNftProperties } from './fetch';
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
 
@@ -37,15 +39,51 @@ export async function isNftOwnedBy(
     nftId: number
 ): Promise<boolean> {
     if (typeof owner === "string") {
-        return (await getOwnedNfts(api, owner))
-            .find(([ownedColId, ownedNftId]) => {
-                return ownedColId === collectionId
-                    && ownedNftId === nftId;
+        return (await getOwnedNfts(api, owner, collectionId))
+            .find((ownedNftId) => {
+                return ownedNftId === nftId;
             }) !== undefined;
     } else {
         // FIXME This method should be implemented via RPC
         return true;
     }
+}
+
+export function isPropertyExists(
+    key: string,
+    value: string,
+    props: Property[]
+): boolean {
+    let isPropFound = false;
+    for (var i = 0; i < props.length && !isPropFound; i++) {
+        const fetchedProp = props[i];
+
+        isPropFound = fetchedProp.key.eq(key)
+                    && fetchedProp.value.eq(value);
+    }
+
+    return isPropFound;
+}
+
+export async function isCollectionPropertyExists(
+    api: ApiPromise,
+    collectionId: number,
+    key: string,
+    value: string
+): Promise<boolean> {
+    const fetchedProps = await getCollectionProperties(api, collectionId);
+    return isPropertyExists(key, value, fetchedProps);
+}
+
+export async function isNftPropertyExists(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    key: string,
+    value: string
+): Promise<boolean> {
+    const fetchedProps = await getNftProperties(api, collectionId, nftId);
+    return isPropertyExists(key, value, fetchedProps);
 }
 
 export async function isNftChildOfAnother(
@@ -55,9 +93,9 @@ export async function isNftChildOfAnother(
     parentNft: NftIdTuple
 ): Promise<boolean> {
     return (await getChildren(api, parentNft[0], parentNft[1]))
-        .find(([childCollectionId, childNftId]) => {
-            return childCollectionId === collectionId
-                && childNftId === nftId;
+        .find((childNft) => {
+            return childNft.collectionId.toNumber() === collectionId
+                && childNft.nftId.toNumber() === nftId;
         }) !== undefined;
 }
 
