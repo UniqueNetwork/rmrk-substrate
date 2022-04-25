@@ -17,9 +17,9 @@ use jsonrpc_core::{Error as RpcError, ErrorCode, Result};
 use jsonrpc_derive::rpc;
 use rmrk_substrate_runtime::Runtime as RmrkRuntime;
 use rmrk_rpc::{RmrkApi as RmrkRuntimeApi};
-use rmrk_traits::primitives::*;
-use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, PropertyInfoOf};
-use pallet_rmrk_equip::ThemeOf;
+use rmrk_traits::{primitives::*, NftChild};
+use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceOf, PropertyInfoOf};
+use pallet_rmrk_equip::{ThemeOf, BaseInfoOf, PartTypeOf};
 
 const RUNTIME_ERROR: i64 = 1;
 
@@ -47,7 +47,10 @@ macro_rules! pass_method {
 						AccountId,
 						CollectionInfo,
 						NftInfo,
+						ResourceInfo,
 						PropertyInfo,
+						BaseInfo,
+						PartType,
 						Theme
 					>
 				>(&at)
@@ -102,8 +105,17 @@ impl<C, Block> RmrkApi<C, Block> {
 }
 
 #[rpc]
-pub trait RmrkApiServer<BlockHash, AccountId, CollectionInfo, NftInfo, PropertyInfo, Theme>
-where Theme: std::fmt::Debug
+pub trait RmrkApiServer<
+	BlockHash,
+	AccountId,
+	CollectionInfo,
+	NftInfo,
+	ResourceInfo,
+	PropertyInfo,
+	BaseInfo,
+	PartType,
+	Theme
+>
 {
 	#[rpc(name = "rmrk_lastCollectionIdx")]
 	fn last_collection_idx(&self, at: Option<BlockHash>) -> Result<CollectionId>;
@@ -117,14 +129,29 @@ where Theme: std::fmt::Debug
 	#[rpc(name = "rmrk_accountTokens")]
 	fn account_tokens(&self, account_id: AccountId, collection_id: CollectionId, at: Option<BlockHash>) -> Result<Vec<NftId>>;
 
+	#[rpc(name = "rmrk_nftChildren")]
+	fn nft_children(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<NftChild>>;
+
 	#[rpc(name = "rmrk_collectionProperties")]
 	fn collection_properties(&self, collection_id: CollectionId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
+
+	#[rpc(name = "rmrk_nftResources")]
+	fn nft_resources(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<ResourceInfo>>;
 
 	#[rpc(name = "rmrk_nftProperties")]
 	fn nft_properties(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
 
+	#[rpc(name = "rmrk_nftResourcePriorities")]
+	fn nft_resource_priorities(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<Vec<u8>>>;
+
 	#[rpc(name = "rmrk_themeNames")]
 	fn theme_names(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Vec<Vec<u8>>>;
+
+	#[rpc(name = "rmrk_base")]
+	fn base(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Option<BaseInfo>>;
+
+	#[rpc(name = "rmrk_baseParts")]
+	fn base_parts(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Vec<PartType>>;
 
 	#[rpc(name = "rmrk_themes")]
 	fn theme(
@@ -134,37 +161,53 @@ where Theme: std::fmt::Debug
 		filter_keys: Option<Vec<String>>,
 		at: Option<BlockHash>
 	) -> Result<Option<Theme>>;
-
-	// #[rpc(name = "rmrk_accountTokens")]
-	// fn account_tokens(&self, account_id: AccountId, at: Option<BlockHash>) -> Result<Vec<(CollectionId, NftId)>>;
 }
 
-impl<C, Block, AccountId, CollectionInfo, NftInfo, PropertyInfo, Theme> RmrkApiServer<
+impl<
+	C, Block, AccountId,
+	CollectionInfo, NftInfo, PropertyInfo, ResourceInfo,
+	BaseInfo, PartType, Theme
+> RmrkApiServer<
 	<Block as BlockT>::Hash,
 	AccountId,
 	CollectionInfo,
 	NftInfo,
+	ResourceInfo,
 	PropertyInfo,
+	BaseInfo,
+	PartType,
 	Theme,
 > for RmrkApi<C, Block>
 where
 	C: ProvideRuntimeApi<Block>,
 	C: HeaderBackend<Block>,
 	C: Send + Sync + 'static,
-	C::Api: RmrkRuntimeApi<Block, AccountId, CollectionInfo, NftInfo, PropertyInfo, Theme>,
+	C::Api: RmrkRuntimeApi<
+		Block, AccountId,
+		CollectionInfo, NftInfo, ResourceInfo, PropertyInfo,
+		BaseInfo, PartType, Theme
+	>,
 	AccountId: Encode,
 	CollectionInfo: Decode,
 	NftInfo: Decode,
+	ResourceInfo: Decode,
 	PropertyInfo: Decode,
-	Theme: Decode + std::fmt::Debug,
+	BaseInfo: Decode,
+	PartType: Decode,
+	Theme: Decode,
 	Block: BlockT
 {
 	pass_method!(last_collection_idx() -> CollectionId);
 	pass_method!(collection_by_id(id: CollectionId) -> Option<CollectionInfo>);
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
+	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild>);
 	pass_method!(collection_properties(collection_id: CollectionId) -> Vec<PropertyInfo>);
 	pass_method!(nft_properties(collection_id: CollectionId, nft_id: NftId) -> Vec<PropertyInfo>);
+	pass_method!(nft_resources(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceInfo>);
+	pass_method!(nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> Vec<Vec<u8>>);
+	pass_method!(base(base_id: BaseId) -> Option<BaseInfo>);
+	pass_method!(base_parts(base_id: BaseId) -> Vec<PartType>);
 	pass_method!(theme_names(base_id: BaseId) -> Vec<Vec<u8>>);
 	pass_method!(
 		theme(
@@ -198,7 +241,10 @@ where
 		AccountId,
 		CollectionInfoOf<RmrkRuntime>,
 		InstanceInfoOf<RmrkRuntime>,
+		ResourceOf<RmrkRuntime>,
 		PropertyInfoOf<RmrkRuntime>,
+		BaseInfoOf<RmrkRuntime>,
+		PartTypeOf<RmrkRuntime>,
 		ThemeOf<RmrkRuntime>,
 	>,
 	C::Api: BlockBuilder<Block>,

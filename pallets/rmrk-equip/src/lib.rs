@@ -33,6 +33,13 @@ pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::Re
 
 pub type ThemePropertyOf<T> = ThemeProperty<<T as pallet_uniques::Config>::StringLimit>;
 
+pub type BaseInfoOf<T> = BaseInfo<
+	<T as frame_system::Config>::AccountId,
+	<T as pallet_uniques::Config>::StringLimit
+>;
+
+pub type PartTypeOf<T> = PartType<<T as pallet_uniques::Config>::StringLimit>;
+
 pub type ThemeOf<T> = Theme<<T as pallet_uniques::Config>::StringLimit>;
 
 // pub struct StringLimitWrapper<T>(sp_std::marker::PhantomData<T>);
@@ -78,7 +85,7 @@ pub mod pallet {
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>, <T as pallet_uniques::Config>::StringLimit>>;
+		StorageMap<_, Twox64Concat, BaseId, BaseInfoOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -86,7 +93,7 @@ pub mod pallet {
 	/// - SlotPart: id, equippable (list), src, z
 	/// - FixedPart: id, src, z
 	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>>>;
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartTypeOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -326,7 +333,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<PartType<StringLimitOf<T>>>,
+			parts: Vec<PartTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

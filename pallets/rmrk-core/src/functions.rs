@@ -88,10 +88,7 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo::<
-			BoundedVec<u8, T::ResourceSymbolLimit>,
-			BoundedVec<u8, T::StringLimit>,
-		> {
+		let res = ResourceOf::<T> {
 			id: resource_id.clone(),
 			base,
 			src,
@@ -493,7 +490,7 @@ impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
-	pub fn iterate_properties(collection_id: CollectionId, nft_id: Option<NftId>) -> Vec<PropertyInfoOf<T>> {
+	pub fn iterate_properties(collection_id: CollectionId, nft_id: Option<NftId>) -> impl Iterator<Item=PropertyInfoOf<T>> {
 		Properties::<T>::iter_prefix((collection_id, nft_id))
 			.map(|(key, value)| {
 				PropertyInfoOf::<T> {
@@ -501,7 +498,10 @@ where
 					value
 				}
 			})
-			.collect()
+	}
+
+	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceOf<T>> {
+		Resources::<T>::iter_prefix_values((collection_id, nft_id))
 	}
 
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account

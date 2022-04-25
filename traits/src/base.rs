@@ -6,23 +6,33 @@ use crate::primitives::{BaseId, SlotId};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
-use sp_std::{vec::Vec, marker::PhantomData};
-use frame_support::traits::Get;
+use sp_std::vec::Vec;
+use frame_support::{
+	traits::Get,
+	BoundedVec
+};
 
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
+#[cfg(feature = "std")]
+use serde::{Serialize, Deserialize};
+
+#[cfg(feature = "std")]
+use crate::bounded_serde;
+
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize, Deserialize))]
 #[scale_info(skip_type_params(StringLimit))]
-pub struct BaseInfo<AccountId, BoundedString, StringLimit: Get<u32>> {
+pub struct BaseInfo<AccountId, StringLimit: Get<u32>> {
 	/// Original creator of the Base
 	pub issuer: AccountId,
 	/// Specifies how an NFT should be rendered, ie "svg"
-	pub base_type: BoundedString,
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
+	pub base_type: BoundedVec<u8, StringLimit>,
 	/// User provided symbol during Base creation
-	pub symbol: BoundedString,
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
+	pub symbol: BoundedVec<u8, StringLimit>,
 	/// Parts, full list of both Fixed and Slot parts
-	pub parts: Vec<PartType<BoundedString>>,
-
-	pub _marker: PhantomData<StringLimit>,
+	#[cfg_attr(feature = "std", serde(bound = ""))]
+	pub parts: Vec<PartType<StringLimit>>,
 }
 
 // Abstraction over a Base system.
@@ -31,7 +41,7 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, StringLimit: Get<u
 		issuer: AccountId,
 		base_type: BoundedString,
 		symbol: BoundedString,
-		parts: Vec<PartType<BoundedString>>,
+		parts: Vec<PartType<StringLimit>>,
 	) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?

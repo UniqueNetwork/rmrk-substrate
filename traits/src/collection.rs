@@ -24,12 +24,12 @@ where
 	/// Current bidder and bid price.
 	pub issuer: AccountId,
 
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub metadata: BoundedVec<u8, StringLimit>,
 
 	pub max: Option<u32>,
 
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub symbol: BoundedVec<u8, SymbolLimit>,
 
 	pub nfts_count: u32,

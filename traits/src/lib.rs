@@ -17,7 +17,7 @@ pub use part::{EquippableList, FixedPart, PartType, SlotPart};
 pub use theme::{Theme, ThemeProperty};
 // pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
-pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
+pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, NftChild};
 pub use priority::Priority;
 pub use property::{Property, PropertyInfo};
 pub use resource::{Resource, ResourceInfo};

@@ -35,11 +35,18 @@ pub struct NftInfo<AccountId, StringLimit: Get<u32>> {
 	pub royalty: Permill,
 
 	/// Arbitrary data about an instance, e.g. IPFS hash
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub metadata: BoundedVec<u8, StringLimit>,
 
 	/// Equipped state
 	pub equipped: bool,
+}
+
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize, Deserialize))]
+#[derive(Encode, Decode, TypeInfo)]
+pub struct NftChild {
+	pub collection_id: CollectionId,
+	pub nft_id: NftId
 }
 
 /// Abstraction over a Nft system.

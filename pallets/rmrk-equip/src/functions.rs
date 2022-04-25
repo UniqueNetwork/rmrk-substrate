@@ -30,6 +30,10 @@ impl<T: Config> Pallet<T> {
 		})
 	}
 
+	pub fn iterate_part_types(base_id: BaseId) -> impl Iterator<Item=PartTypeOf<T>> {
+		Parts::<T>::iter_prefix_values(base_id)
+	}
+
 	pub fn iterate_theme_names(base_id: BaseId) -> impl Iterator<Item=StringLimitOf<T>> {
 		Themes::<T>::iter_key_prefix((base_id,))
 			.map(|(theme_name, ..)| theme_name.clone())
@@ -90,7 +94,7 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: Vec<PartType<StringLimitOf<T>>>,
+		parts: Vec<PartType<<T as pallet_uniques::Config>::StringLimit>>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -107,8 +111,7 @@ where
 			issuer,
 			base_type,
 			symbol,
-			parts,
-			_marker: sp_std::marker::PhantomData,
+			parts
 		};
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)

@@ -20,7 +20,7 @@ use sp_std::fmt::Debug;
 #[scale_info(skip_type_params(StringLimit))]
 pub struct Theme<StringLimit: Get<u32>> {
 	/// Name of the theme
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub name: BoundedVec<u8, StringLimit>,
 
 	/// Theme properties
@@ -35,11 +35,11 @@ pub struct Theme<StringLimit: Get<u32>> {
 #[scale_info(skip_type_params(StringLimit))]
 pub struct ThemeProperty<StringLimit: Get<u32>> {
 	/// Key of the property
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub key: BoundedVec<u8, StringLimit>,
 
 	/// Value of the property
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub value: BoundedVec<u8, StringLimit>,
 
 	/// Inheritability

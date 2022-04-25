@@ -41,9 +41,9 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-use rmrk_traits::primitives::*;
-use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, PropertyInfoOf};
-use pallet_rmrk_equip::ThemeOf;
+use rmrk_traits::{primitives::*, NftChild};
+use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceOf, PropertyInfoOf};
+use pallet_rmrk_equip::{ThemeOf, BaseInfoOf, PartTypeOf};
 
 /// Import the template pallet.
 pub use pallet_template;
@@ -442,7 +442,10 @@ impl_runtime_apis! {
 		AccountId,
 		CollectionInfoOf<Runtime>,
 		InstanceInfoOf<Runtime>,
+		ResourceOf<Runtime>,
 		PropertyInfoOf<Runtime>,
+		BaseInfoOf<Runtime>,
+		PartTypeOf<Runtime>,
 		ThemeOf<Runtime>
 	> for Runtime
 	{
@@ -462,12 +465,49 @@ impl_runtime_apis! {
 			Ok(Uniques::owned_in_class(&collection_id, &account_id).collect())
 		}
 
+		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<NftChild>> {
+			let children = RmrkCore::children((collection_id, nft_id))
+				.into_iter()
+				.map(|(collection_id, nft_id)| NftChild {
+					collection_id,
+					nft_id
+				})
+				.collect();
+
+			Ok(children)
+		}
+
 		fn collection_properties(collection_id: CollectionId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
-			Ok(RmrkCore::iterate_properties(collection_id, None))
+			Ok(RmrkCore::iterate_properties(collection_id, None).collect())
 		}
 
 		fn nft_properties(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<PropertyInfoOf<Runtime>>> {
-			Ok(RmrkCore::iterate_properties(collection_id, Some(nft_id)))
+			Ok(RmrkCore::iterate_properties(collection_id, Some(nft_id)).collect())
+		}
+
+		fn nft_resources(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<ResourceOf<Runtime>>> {
+			Ok(RmrkCore::iterate_resources(collection_id, nft_id).collect())
+		}
+
+		fn nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<Vec<u8>>> {
+			let priorities = RmrkCore::priorities(collection_id, nft_id)
+				.map(|priorities| {
+					priorities
+						.into_iter()
+						.map(|priority| priority.into())
+						.collect()
+				})
+				.unwrap_or(vec![]);
+
+			Ok(priorities)
+		}
+
+		fn base(base_id: BaseId) -> rmrk_rpc::Result<Option<BaseInfoOf<Runtime>>> {
+			Ok(RmrkEquip::bases(base_id))
+		}
+
+		fn base_parts(base_id: BaseId) -> rmrk_rpc::Result<Vec<PartTypeOf<Runtime>>> {
+			Ok(RmrkEquip::iterate_part_types(base_id).collect())
 		}
 
 		fn theme_names(base_id: BaseId) -> rmrk_rpc::Result<Vec<Vec<u8>>> {

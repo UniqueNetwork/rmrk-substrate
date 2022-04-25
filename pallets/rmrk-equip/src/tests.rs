@@ -68,7 +68,7 @@ fn create_base_works() {
 #[test]
 fn exceeding_max_parts_per_base_fails() {
 	ExtBuilder::default().build().execute_with(|| {
-		let mut parts = Vec::<PartType<BoundedVec<u8, UniquesStringLimit>>>::new();
+		let mut parts = Vec::<PartType<UniquesStringLimit>>::new();
 		for i in 100..110 {
 			let fixed_part = FixedPart { id: i, z: 0, src: stb("fixed_part_src") };
 			parts.push(PartType::FixedPart(fixed_part));

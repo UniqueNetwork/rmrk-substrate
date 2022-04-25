@@ -25,11 +25,11 @@ where
 	ValueLimit: Get<u32>
 {
 	/// Key of the property
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub key: BoundedVec<u8, KeyLimit>,
 
 	/// Value of the property
-	#[cfg_attr(feature = "std", serde(with = "bounded_serde"))]
+	#[cfg_attr(feature = "std", serde(with = "bounded_serde::vec"))]
 	pub value: BoundedVec<u8, ValueLimit>,
 }
 
