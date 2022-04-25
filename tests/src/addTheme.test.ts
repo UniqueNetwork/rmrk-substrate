@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { getApiConnection } from './substrate/substrate-api';
 import { createBase, addTheme } from "./util/tx";
 import { expectTxFailure } from './util/helpers';
+import { getThemeNames } from './util/fetch';
 
 describe("Integration test: add Theme to Base", () => {
     let api: any;
@@ -51,6 +52,46 @@ describe("Integration test: add Theme to Base", () => {
                 }
             ]
         })
+    });
+
+    it("fetch filtered theme keys", async () => {
+        const baseId = await createBase(api, alice, "2-themed-base", "2TBase", []);
+        await addTheme(api, alice, baseId, {
+            name: "default",
+            properties: [
+                {
+                    key: "first-key",
+                    value: "first-key-value"
+                },
+                {
+                    key: "second-key",
+                    value: "second-key-value"
+                }
+            ]
+        }, ["second-key"]);
+    });
+
+    it("fetch theme names", async() => {
+        const baseId = await createBase(api, alice, "3-themed-base", "3TBase", []);
+        const names = [
+            "default",
+            "first-theme",
+            "second-theme"
+        ];
+
+        for (var i = 0; i < names.length; i++) {
+            await addTheme(api, alice, baseId, { name: names[i], properties: [{ key: 'dummy', value: 'dummy' }] });
+        }
+
+        const fetchedNames = await getThemeNames(api, baseId);
+
+        for (var i = 0; i < names.length; i++) {
+            const isFound = fetchedNames.find(
+                (name) => name === names[i]
+            ) !== undefined;
+
+            expect(isFound, "Error: invalid theme names").to.be.true;
+        }
     });
 
     it("[negative] unable to add theme to non-existing base", async () => {
