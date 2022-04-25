@@ -3,7 +3,7 @@
 //! used by Substrate nodes. This file extends those RPC definitions with
 //! capabilities that are specific to this project's runtime configuration.
 
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 
 use std::{sync::Arc, marker::PhantomData};
 
@@ -16,9 +16,9 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use jsonrpc_core::{Error as RpcError, ErrorCode, Result};
 use jsonrpc_derive::rpc;
 use rmrk_substrate_runtime::Runtime as RmrkRuntime;
-use rmrk_rpc::{RmrkApi as RmrkRuntimeApi};
+use rmrk_rpc::{RmrkApi as RmrkRuntimeApi, PropertyKey, ResourceId, ThemeName};
 use rmrk_traits::{primitives::*, NftChild};
-use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceOf, PropertyInfoOf};
+use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceInfoOf, PropertyInfoOf};
 use pallet_rmrk_equip::{ThemeOf, BaseInfoOf, PartTypeOf};
 
 const RUNTIME_ERROR: i64 = 1;
@@ -28,8 +28,7 @@ macro_rules! pass_method {
 		$method_name:ident(
 			$($(#[map(|$map_arg:ident| $map:expr)])? $name:ident: $ty:ty),*
 			$(,)?
-		) -> $result:ty $(=> $mapper:expr)?
-		$(; changed_in $ver:expr, $changed_method_name:ident ($($changed_name:expr), * $(,)?) => $fixer:expr)*
+		) -> $result:ty
 	) => {
 		fn $method_name(
 			&self,
@@ -60,10 +59,7 @@ macro_rules! pass_method {
 				unreachable!("The RMRK API is always available; qed");
 			};
 
-			let result = $(if _api_version < $ver {
-				api.$changed_method_name(&at, $($changed_name),*).map(|r| r.map($fixer))
-			} else)*
-			{ api.$method_name(&at, $($((|$map_arg: $ty| $map))? ($name)),*) };
+			let result = api.$method_name(&at, $($((|$map_arg: $ty| $map))? ($name)),*);
 
 			let result = result.map_err(|e| RpcError {
 				code: ErrorCode::ServerError(RUNTIME_ERROR),
@@ -75,7 +71,7 @@ macro_rules! pass_method {
 				code: ErrorCode::InvalidParams,
 				message: "Runtime returned error".into(),
 				data: Some(format!("{:?}", e).into()),
-			})$(.map($mapper))?
+			})
 		}
 	};
 }
@@ -90,12 +86,14 @@ pub struct FullDeps<C, P> {
 	pub deny_unsafe: DenyUnsafe,
 }
 
+/// RMRK RPC API instance
 pub struct RmrkApi<C, Block> {
 	client: Arc<C>,
 	_marker: PhantomData<Block>,
 }
 
 impl<C, Block> RmrkApi<C, Block> {
+	/// Make new RMRK RPC API instance
 	pub fn new(client: Arc<C>) -> Self {
 		Self {
 			client,
@@ -105,6 +103,7 @@ impl<C, Block> RmrkApi<C, Block> {
 }
 
 #[rpc]
+/// RMRK RPC API
 pub trait RmrkApiServer<
 	BlockHash,
 	AccountId,
@@ -118,42 +117,55 @@ pub trait RmrkApiServer<
 >
 {
 	#[rpc(name = "rmrk_lastCollectionIdx")]
+	/// Get the latest created collection id
 	fn last_collection_idx(&self, at: Option<BlockHash>) -> Result<CollectionId>;
 
 	#[rpc(name = "rmrk_collectionById")]
+	/// Get collection by id
 	fn collection_by_id(&self, id: CollectionId, at: Option<BlockHash>) -> Result<Option<CollectionInfo>>;
 
 	#[rpc(name = "rmrk_nftById")]
+	/// Get NFT by collection id and NFT id
 	fn nft_by_id(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Option<NftInfo>>;
 
 	#[rpc(name = "rmrk_accountTokens")]
+	/// Get tokens owned by an account in a collection
 	fn account_tokens(&self, account_id: AccountId, collection_id: CollectionId, at: Option<BlockHash>) -> Result<Vec<NftId>>;
 
 	#[rpc(name = "rmrk_nftChildren")]
+	/// Get NFT children
 	fn nft_children(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<NftChild>>;
 
 	#[rpc(name = "rmrk_collectionProperties")]
+	/// Get collection properties
 	fn collection_properties(&self, collection_id: CollectionId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
 
-	#[rpc(name = "rmrk_nftResources")]
-	fn nft_resources(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<ResourceInfo>>;
-
 	#[rpc(name = "rmrk_nftProperties")]
+	/// Get NFT properties
 	fn nft_properties(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<PropertyInfo>>;
 
-	#[rpc(name = "rmrk_nftResourcePriorities")]
-	fn nft_resource_priorities(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<Vec<u8>>>;
+	#[rpc(name = "rmrk_nftResources")]
+	/// Get NFT resources
+	fn nft_resources(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<ResourceInfo>>;
 
-	#[rpc(name = "rmrk_themeNames")]
-	fn theme_names(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Vec<Vec<u8>>>;
+	#[rpc(name = "rmrk_nftResourcePriorities")]
+	/// Get NFT resource priorities
+	fn nft_resource_priorities(&self, collection_id: CollectionId, nft_id: NftId, at: Option<BlockHash>) -> Result<Vec<ResourceId>>;
 
 	#[rpc(name = "rmrk_base")]
+	/// Get base info
 	fn base(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Option<BaseInfo>>;
 
 	#[rpc(name = "rmrk_baseParts")]
+	/// Get all Base's parts
 	fn base_parts(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Vec<PartType>>;
 
+	#[rpc(name = "rmrk_themeNames")]
+	/// Get Base's theme names
+	fn theme_names(&self, base_id: BaseId, at: Option<BlockHash>) -> Result<Vec<ThemeName>>;
+
 	#[rpc(name = "rmrk_themes")]
+	/// Get Theme's keys values
 	fn theme(
 		&self,
 		base_id: BaseId,
@@ -205,10 +217,10 @@ where
 	pass_method!(collection_properties(collection_id: CollectionId) -> Vec<PropertyInfo>);
 	pass_method!(nft_properties(collection_id: CollectionId, nft_id: NftId) -> Vec<PropertyInfo>);
 	pass_method!(nft_resources(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceInfo>);
-	pass_method!(nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> Vec<Vec<u8>>);
+	pass_method!(nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceId>);
 	pass_method!(base(base_id: BaseId) -> Option<BaseInfo>);
 	pass_method!(base_parts(base_id: BaseId) -> Vec<PartType>);
-	pass_method!(theme_names(base_id: BaseId) -> Vec<Vec<u8>>);
+	pass_method!(theme_names(base_id: BaseId) -> Vec<ThemeName>);
 	pass_method!(
 		theme(
 			base_id: BaseId,
@@ -216,16 +228,14 @@ where
 			#[map(|n| n.into_bytes())]
 			theme_name: String,
 
-			#[
-				map(|optional_keys| optional_keys.map(
-					|keys| keys.into_iter().map(
-						|key| key.into_bytes()
-					).collect()
-				)
-			)]
+			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
 			filter_keys: Option<Vec<String>>
 		) -> Option<Theme>
 	);
+}
+
+fn string_keys_to_bytes_keys(keys: Vec<String>) -> Vec<PropertyKey> {
+	keys.into_iter().map(|key| key.into_bytes()).collect()
 }
 
 /// Instantiate all full RPC extensions.
@@ -241,7 +251,7 @@ where
 		AccountId,
 		CollectionInfoOf<RmrkRuntime>,
 		InstanceInfoOf<RmrkRuntime>,
-		ResourceOf<RmrkRuntime>,
+		ResourceInfoOf<RmrkRuntime>,
 		PropertyInfoOf<RmrkRuntime>,
 		BaseInfoOf<RmrkRuntime>,
 		PartTypeOf<RmrkRuntime>,
@@ -259,11 +269,6 @@ where
 	io.extend_with(SystemApi::to_delegate(FullSystem::new(client.clone(), pool, deny_unsafe)));
 
 	io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(client.clone())));
-
-	// Extend this RPC with a custom API by using the following syntax.
-	// `YourRpcStruct` should have a reference to a client, which is needed
-	// to call into the runtime.
-	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
 
 	io.extend_with(RmrkApiServer::to_delegate(RmrkApi::new(client.clone())));
 

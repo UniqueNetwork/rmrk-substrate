@@ -16,7 +16,7 @@ const fn = (description: string, params: RpcParam[], type: string) => ({
 export default {
     types,
     rpc: {
-        lastCollectionIdx: fn('Get all collections', [], 'u32'),
+        lastCollectionIdx: fn('Get the latest created collection id', [], 'u32'),
         collectionById: fn('Get collection by id', [{name: 'id', type: 'u32'}], 'Option<RmrkTraitsCollectionCollectionInfo>'),
         nftById: fn(
             'Get NFT by collection id and NFT id',

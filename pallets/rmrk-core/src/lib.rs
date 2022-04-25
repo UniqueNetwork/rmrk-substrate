@@ -43,7 +43,7 @@ pub type PropertyInfoOf<T> = PropertyInfo<
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
-pub type ResourceOf<T> =
+pub type ResourceInfoOf<T> =
 	ResourceInfo<
 		<T as Config>::ResourceSymbolLimit,
 		<T as pallet_uniques::Config>::StringLimit
@@ -141,7 +141,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>,
 		),
-		ResourceOf<T>,
+		ResourceInfoOf<T>,
 		OptionQuery,
 	>;
 

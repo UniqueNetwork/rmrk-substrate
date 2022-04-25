@@ -88,7 +88,7 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceOf::<T> {
+		let res = ResourceInfoOf::<T> {
 			id: resource_id.clone(),
 			base,
 			src,
@@ -500,7 +500,7 @@ where
 			})
 	}
 
-	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceOf<T>> {
+	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceInfoOf<T>> {
 		Resources::<T>::iter_prefix_values((collection_id, nft_id))
 	}
 

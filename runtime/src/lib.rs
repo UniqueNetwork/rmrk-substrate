@@ -42,7 +42,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 use rmrk_traits::{primitives::*, NftChild};
-use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceOf, PropertyInfoOf};
+use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceInfoOf, PropertyInfoOf};
 use pallet_rmrk_equip::{ThemeOf, BaseInfoOf, PartTypeOf};
 
 /// Import the template pallet.
@@ -442,7 +442,7 @@ impl_runtime_apis! {
 		AccountId,
 		CollectionInfoOf<Runtime>,
 		InstanceInfoOf<Runtime>,
-		ResourceOf<Runtime>,
+		ResourceInfoOf<Runtime>,
 		PropertyInfoOf<Runtime>,
 		BaseInfoOf<Runtime>,
 		PartTypeOf<Runtime>,
@@ -485,11 +485,11 @@ impl_runtime_apis! {
 			Ok(RmrkCore::iterate_properties(collection_id, Some(nft_id)).collect())
 		}
 
-		fn nft_resources(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<ResourceOf<Runtime>>> {
+		fn nft_resources(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<ResourceInfoOf<Runtime>>> {
 			Ok(RmrkCore::iterate_resources(collection_id, nft_id).collect())
 		}
 
-		fn nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<Vec<u8>>> {
+		fn nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<rmrk_rpc::ResourceId>> {
 			let priorities = RmrkCore::priorities(collection_id, nft_id)
 				.map(|priorities| {
 					priorities
@@ -510,7 +510,7 @@ impl_runtime_apis! {
 			Ok(RmrkEquip::iterate_part_types(base_id).collect())
 		}
 
-		fn theme_names(base_id: BaseId) -> rmrk_rpc::Result<Vec<Vec<u8>>> {
+		fn theme_names(base_id: BaseId) -> rmrk_rpc::Result<Vec<rmrk_rpc::ThemeName>> {
 			let names = RmrkEquip::iterate_theme_names(base_id)
 				.map(|name| name.into())
 				.collect();
@@ -520,8 +520,8 @@ impl_runtime_apis! {
 
 		fn theme(
 			base_id: BaseId,
-			theme_name: Vec<u8>,
-			filter_keys: Option<Vec<Vec<u8>>>
+			theme_name: rmrk_rpc::ThemeName,
+			filter_keys: Option<Vec<rmrk_rpc::PropertyKey>>
 		) -> rmrk_rpc::Result<Option<ThemeOf<Runtime>>> {
 			use pallet_rmrk_equip::StringLimitOf;
 

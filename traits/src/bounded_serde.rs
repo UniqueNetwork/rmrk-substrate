@@ -7,7 +7,7 @@ use sp_std::{
 use frame_support::{BoundedVec, traits::Get};
 use serde::{
     ser::{self, Serialize, SerializeSeq},
-    de::{self, Visitor, SeqAccess, Deserialize, Error},
+    de::{self, Visitor, SeqAccess, Error},
 };
 
 pub mod vec {
