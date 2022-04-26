@@ -11,8 +11,9 @@ use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::{convert::TryInto, vec::Vec};
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Priority, Property, Resource, ResourceInfo,
+	primitives::*, AccountIdOrCollectionNftTuple,
+	Collection, CollectionInfo, Nft, NftInfo, NftChild,
+	Priority, Property, PropertyInfo, Resource, ResourceInfo, PhantomType
 };
 use sp_std::result::Result;
 
@@ -24,15 +25,29 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub type CollectionInfoOf<T> = CollectionInfo<
+	<T as pallet_uniques::Config>::StringLimit,
+	<T as Config>::CollectionSymbolLimit,
+	<T as frame_system::Config>::AccountId
+>;
+
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
-	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	<T as pallet_uniques::Config>::StringLimit,
+>;
+
+pub type PropertyInfoOf<T> = PropertyInfo<
+	<T as pallet_uniques::Config>::KeyLimit,
+	<T as pallet_uniques::Config>::ValueLimit
 >;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
-pub type ResourceOf<T, R> =
-	ResourceInfo<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ResourceInfoOf<T> =
+	ResourceInfo<
+		<T as Config>::ResourceSymbolLimit,
+		<T as pallet_uniques::Config>::StringLimit
+	>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -83,12 +98,8 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
-	pub type Collections<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		CollectionId,
-		CollectionInfo<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>,
-	>;
+	pub type Collections<T: Config> =
+		StorageMap<_, Twox64Concat, CollectionId, CollectionInfoOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
@@ -130,7 +141,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>,
 		),
-		ResourceOf<T, T::ResourceSymbolLimit>,
+		ResourceInfoOf<T>,
 		OptionQuery,
 	>;
 
@@ -146,6 +157,16 @@ pub mod pallet {
 		),
 		ValueLimitOf<T>,
 		OptionQuery,
+	>;
+
+	#[pallet::storage]
+	pub type DummyStorage<T: Config> = StorageValue<
+		_,
+		(
+			NftChild,
+			PhantomType<PropertyInfoOf<T>>
+		),
+		OptionQuery
 	>;
 
 	#[pallet::pallet]

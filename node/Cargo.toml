@@ -39,6 +39,10 @@ sp-timestamp = { version = "4.0.0-dev", git = "https://github.com/paritytech/sub
 
 # These dependencies are used for the node template"s RPCs
 jsonrpc-core = "18.0.0"
+jsonrpc-derive = "18.0.0"
+jsonrpc-core-client = "18.0.0"
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 sc-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 sp-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
@@ -54,6 +58,10 @@ frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/pari
 
 # Local Dependencies
 rmrk-substrate-runtime = { version = "4.0.0-dev", path = "../runtime" }
+rmrk-traits = { version = "0.0.1", path = "../traits" }
+rmrk-rpc = { version = "0.0.1", path = "../rpc" }
+pallet-rmrk-core = { version = "0.0.1", path = "../pallets/rmrk-core" }
+pallet-rmrk-equip = { version = "0.0.1", path = "../pallets/rmrk-equip" }
 
 [build-dependencies]
 substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }

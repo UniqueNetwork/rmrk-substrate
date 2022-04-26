@@ -10,7 +10,7 @@ use sp_std::vec::Vec;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme, ThemeProperty
 };
 
 mod functions;
@@ -30,6 +30,17 @@ pub use pallet::*;
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
+
+pub type ThemePropertyOf<T> = ThemeProperty<<T as pallet_uniques::Config>::StringLimit>;
+
+pub type BaseInfoOf<T> = BaseInfo<
+	<T as frame_system::Config>::AccountId,
+	<T as pallet_uniques::Config>::StringLimit
+>;
+
+pub type PartTypeOf<T> = PartType<<T as pallet_uniques::Config>::StringLimit>;
+
+pub type ThemeOf<T> = Theme<<T as pallet_uniques::Config>::StringLimit>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -56,7 +67,7 @@ pub mod pallet {
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
+		StorageMap<_, Twox64Concat, BaseId, BaseInfoOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -64,7 +75,7 @@ pub mod pallet {
 	/// - SlotPart: id, equippable (list), src, z
 	/// - FixedPart: id, src, z
 	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>>>;
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartTypeOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -262,7 +273,7 @@ pub mod pallet {
 		/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 		/// Themes are stored in the Themes storage
 		/// A Theme named "default" is required prior to adding other Themes.
-		/// 
+		///
 		/// Parameters:
 		/// - origin: The caller of the function, must be issuer of the base
 		/// - base_id: The Base containing the Theme to be updated
@@ -275,7 +286,7 @@ pub mod pallet {
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
-			theme: Theme<BoundedVec<u8, T::StringLimit>>,
+			theme: Theme<T::StringLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -304,7 +315,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<PartType<StringLimitOf<T>>>,
+			parts: Vec<PartTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

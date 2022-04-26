@@ -8,15 +8,18 @@ pub mod priority;
 pub mod property;
 pub mod resource;
 pub mod theme;
+pub mod bounded_serde;
+pub mod phantom_type;
 
+pub use phantom_type::PhantomType;
 pub use base::{Base, BaseInfo};
 pub use part::{EquippableList, FixedPart, PartType, SlotPart};
 pub use theme::{Theme, ThemeProperty};
 // pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
-pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
+pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, NftChild};
 pub use priority::Priority;
-pub use property::Property;
+pub use property::{Property, PropertyInfo};
 pub use resource::{Resource, ResourceInfo};
 pub mod primitives {
 	pub type CollectionId = u32;
