@@ -42,24 +42,6 @@ pub type PartTypeOf<T> = PartType<<T as pallet_uniques::Config>::StringLimit>;
 
 pub type ThemeOf<T> = Theme<<T as pallet_uniques::Config>::StringLimit>;
 
-// pub struct StringLimitWrapper<T>(sp_std::marker::PhantomData<T>);
-
-// impl<T: frame_support::traits::Get<u32>>
-// frame_support::traits::Get<u32> for StringLimitWrapper<T> {
-// 	fn get() -> u32  {
-// 		T::get()
-// 	}
-// }
-
-// impl<T> sp_std::fmt::Debug for StringLimitWrapper<T>
-// where
-// 	T: frame_support::traits::Get<u32>,
-// {
-// 	fn fmt(&self, f: &mut sp_std::fmt::Formatter<'_>) -> sp_std::fmt::Result {
-// 		write!(f, "")
-// 	}
-// }
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
