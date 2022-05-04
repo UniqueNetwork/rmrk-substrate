@@ -2,7 +2,7 @@ import { getApiConnection } from "./substrate/substrate-api";
 import {
   addNftResource,
   createCollection,
-  mintNft,
+  mintNft
 } from "./util/tx";
 
 describe("Integration test: Add top-level NFT resource (by the same user)", () => {
@@ -30,7 +30,7 @@ describe("Integration test: Add top-level NFT resource (by the same user)", () =
         "nft-metadata"
       );
 
-      await addNftResource(api, nftId, resouceId, collectionId, Alice);
+      await addNftResource(api, nftId, resouceId, collectionId, null, Alice, null);
     });
   });
 

@@ -660,17 +660,19 @@ export async function addNftResource(
   nftId: number,
   resourceId: string,
   collectionId: number,
-  issuerUri: string
+  baseId: string | null,
+  issuerUri: string,
+  slotId: string | null
 ) {
   const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.addResource(
     collectionId,
     nftId,
     resourceId,
-    null,
+    baseId,
     null,
     "meta",
-    null,
+    slotId,
     null,
     null,
     null
@@ -697,4 +699,18 @@ export async function addNftResource(
       expect(resource.pending.isTrue, 'Error: added resource should not be added')
         .to.be.false;
   }
+}
+
+export async function equipNft(
+  api: ApiPromise,
+  issuerUri: string,
+  item: any,
+  equipper: any,
+  base: number,
+  slot: number
+) {
+  const issuer = privateKey(issuerUri);
+  const tx = api.tx.rmrkEquip.equip(item, equipper, base, slot);
+  const events = await executeTransaction(api, issuer, tx);
+  expect(isTxResultSuccess(events)).to.be.true;
 }
