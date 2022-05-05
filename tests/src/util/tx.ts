@@ -714,3 +714,27 @@ export async function equipNft(
   const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 }
+
+export async function unequipNft(
+  api: ApiPromise,
+  issuerUri: string,
+  item: any,
+  equipper: any,
+  base: number,
+  slot: number
+) {
+  const issuer = privateKey(issuerUri);
+  const tx = api.tx.rmrkEquip.equip(item, equipper, base, slot);
+  const events = await executeTransaction(api, issuer, tx);
+
+  const result = extractRmrkEquipTxResult(
+    events,
+    "SlotUnequipped",
+    (data) => {
+      return parseInt(data[1].toString(), 10);
+    }
+  );
+
+  expect(result.success).to.be.true;
+  expect(isTxResultSuccess(events)).to.be.true;
+}
