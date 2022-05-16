@@ -1,30 +1,9 @@
-use super::{
-	part::{EquippableList, PartType},
-	theme::Theme,
-};
 use crate::primitives::{BaseId, SlotId};
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, RuntimeDebug};
-use sp_std::vec::Vec;
-use frame_support::pallet_prelude::MaxEncodedLen;
-
-
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
-	/// Original creator of the Base
-	pub issuer: AccountId,
-	/// Specifies how an NFT should be rendered, ie "svg"
-	pub base_type: BoundedString,
-	/// User provided symbol during Base creation
-	pub symbol: BoundedString,
-	/// Parts, full list of both Fixed and Slot parts
-	pub parts: BoundedParts,
-}
+use rmrk_types::{EquippableList, Theme};
+use sp_runtime::DispatchError;
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList, BoundedPropertyList> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
@@ -51,6 +30,6 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, Boun
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedString>,
+		theme: Theme<BoundedString, BoundedPropertyList>,
 	) -> Result<(), DispatchError>;
 }

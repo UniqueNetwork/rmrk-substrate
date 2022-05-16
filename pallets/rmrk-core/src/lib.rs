@@ -26,6 +26,7 @@ mod tests;
 
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
+	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
 pub type ResourceOf<T, R, P> = ResourceInfo::<
@@ -125,7 +126,7 @@ pub mod pallet {
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
 	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
-	
+
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info

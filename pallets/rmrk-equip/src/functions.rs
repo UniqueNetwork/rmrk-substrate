@@ -35,7 +35,8 @@ impl<T: Config> Base<
 	StringLimitOf<T>,
 	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 	T::PartsLimit>,
-	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+	Vec<ThemeProperty<StringLimitOf<T>>>
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -338,7 +339,7 @@ where
 	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 	/// Themes are stored in the Themes storage
 	/// A "default" theme is required prior to adding other Themes.
-	/// 
+	///
 	/// Parameters:
 	/// - issuer: The caller of the function, must be issuer of the base
 	/// - base_id: The Base containing the Theme to be updated
@@ -350,7 +351,7 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		theme: ThemeOf<T>,
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
@@ -359,7 +360,7 @@ where
 		ensure!(Bases::<T>::get(base_id).unwrap().issuer == issuer, Error::<T>::PermissionError);
 
 		// The string "default" as a BoundedVec
-		let default_as_bv: BoundedVec<u8, T::StringLimit> =
+		let default_as_bv: StringLimitOf<T> =
 			"default".as_bytes().to_vec().try_into().unwrap();
 
 		// Check for existence of default theme (default theme cannot be empty)

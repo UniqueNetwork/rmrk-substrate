@@ -11,6 +11,7 @@ use frame_support::{
 use frame_system::{ensure_signed, RawOrigin};
 
 use sp_std::prelude::*;
+use sp_runtime::Permill;
 
 pub use pallet::*;
 
@@ -36,6 +37,7 @@ pub mod pallet {
 
 	pub type InstanceInfoOf<T> = NftInfo<
 		<T as frame_system::Config>::AccountId,
+		Permill,
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	>;
 

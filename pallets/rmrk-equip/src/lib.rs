@@ -6,12 +6,14 @@ use frame_support::{
 	ensure, BoundedVec,
 };
 
+use sp_std::vec::Vec;
 use sp_runtime::{traits::StaticLookup};
 
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType,
+	Theme, ThemeProperty,
 };
 
 mod functions;
@@ -32,6 +34,8 @@ pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::String
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
 
+pub type ThemeOf<T> = Theme<StringLimitOf<T>, Vec<ThemeProperty<StringLimitOf<T>>>>;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -48,7 +52,7 @@ pub mod pallet {
 
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
-		type MaxCollectionsEquippablePerPart: Get<u32>;		
+		type MaxCollectionsEquippablePerPart: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -58,8 +62,8 @@ pub mod pallet {
 	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
 		StorageMap<
-		_, 
-		Twox64Concat, BaseId, 
+		_,
+		Twox64Concat, BaseId,
 		BaseInfo<
 			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 			T::PartsLimit>>
@@ -307,7 +311,7 @@ pub mod pallet {
 		/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 		/// Themes are stored in the Themes storage
 		/// A Theme named "default" is required prior to adding other Themes.
-		/// 
+		///
 		/// Parameters:
 		/// - origin: The caller of the function, must be issuer of the base
 		/// - base_id: The Base containing the Theme to be updated
@@ -320,7 +324,7 @@ pub mod pallet {
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
-			theme: Theme<BoundedVec<u8, T::StringLimit>>,
+			theme: ThemeOf<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

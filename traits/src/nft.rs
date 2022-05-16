@@ -1,7 +1,4 @@
-use codec::{Decode, Encode};
-use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, RuntimeDebug};
-use sp_std::cmp::Eq;
+use sp_runtime::DispatchError;
 
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
@@ -9,41 +6,7 @@ use sp_runtime::Permill;
 use crate::primitives::*;
 use sp_std::result::Result;
 
-#[cfg(feature = "std")]
-use serde::{Deserialize, Serialize};
-
-#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum AccountIdOrCollectionNftTuple<AccountId> {
-	AccountId(AccountId),
-	CollectionAndNftTuple(CollectionId, NftId),
-}
-
-/// Royalty information (recipient and amount)
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-pub struct RoyaltyInfo<AccountId> {
-	/// Recipient (AccountId) of the royalty
-    pub recipient: AccountId,
-	/// Amount (Permill) of the royalty
-    pub amount: Permill,
-}
-
-/// Nft info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-pub struct NftInfo<AccountId, BoundedString> {
-	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
-	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
-	/// Royalty (optional)
-	pub royalty: Option<RoyaltyInfo<AccountId>>,
-	/// Arbitrary data about an instance, e.g. IPFS hash
-	pub metadata: BoundedString,
-	/// Equipped state
-	pub equipped: bool,
-	/// Pending state (if sent to NFT)
-	pub pending: bool,
-}
+use rmrk_types::AccountIdOrCollectionNftTuple;
 
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
