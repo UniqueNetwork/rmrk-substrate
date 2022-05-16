@@ -39,6 +39,8 @@ sp-session = { version = "4.0.0-dev", default-features = false, git = "https://g
 sp-std = { version = "4.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
 sp-version = { version = "5.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+rmrk-types = { version = "0.0.1", default-features = false, path = "../types" }
+rmrk-rpc = { version = "0.0.1", default-features = false, path = "../rpc" }
 
 # Used for the node template"s RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
@@ -70,6 +72,8 @@ std = [
 	"pallet-rmrk-core/std",
 	"pallet-rmrk-market/std",
 	"pallet-rmrk-market/std",
+	"rmrk-types/std",
+	"rmrk-rpc/std",
 	"pallet-uniques/std",
 	"pallet-utility/std",
 	"pallet-aura/std",

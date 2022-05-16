@@ -6,7 +6,7 @@ use frame_support::{
 	ensure, BoundedVec,
 };
 
-use sp_std::vec::Vec;
+use sp_std::{vec::Vec, collections::btree_set::BTreeSet};
 use sp_runtime::{traits::StaticLookup};
 
 pub use pallet::*;
@@ -34,7 +34,19 @@ pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::String
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
 
-pub type ThemeOf<T> = Theme<StringLimitOf<T>, Vec<ThemeProperty<StringLimitOf<T>>>>;
+pub type BaseInfoOf<T> = BaseInfo<<T as frame_system::Config>::AccountId, StringLimitOf<T>>;
+
+pub type PartTypeOf<T> = PartType<
+	StringLimitOf<T>,
+	BoundedVec<
+		CollectionId,
+		<T as Config>::MaxCollectionsEquippablePerPart
+	>
+>;
+
+pub type ThemePropertyOf<T> = ThemeProperty<StringLimitOf<T>>;
+
+pub type ThemeOf<T> = Theme<StringLimitOf<T>, Vec<ThemePropertyOf<T>>>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -57,16 +69,11 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn bases)]
-	/// Stores Bases info (issuer, base_type, symbol, parts)
-	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
-	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
 		StorageMap<
 		_,
 		Twox64Concat, BaseId,
-		BaseInfo<
-			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-			T::PartsLimit>>
+		BaseInfoOf<T>
 		>;
 
 	#[pallet::storage]

@@ -26,6 +26,52 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
+
+	pub fn iterate_part_types(base_id: BaseId) -> impl Iterator<Item=PartTypeOf<T>> {
+		Parts::<T>::iter_prefix_values(base_id)
+	}
+
+	pub fn iterate_theme_names(base_id: BaseId) -> impl Iterator<Item=StringLimitOf<T>> {
+		Themes::<T>::iter_key_prefix((base_id,))
+			.map(|(theme_name, ..)| theme_name.clone())
+	}
+
+	pub fn get_theme(
+		base_id: BaseId,
+		theme_name: StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>
+	) -> Option<ThemeOf<T>> {
+		let properties: Vec<_> = Self::query_theme_kv(base_id, &theme_name, filter_keys);
+
+		if properties.is_empty() {
+			None
+		} else {
+			Some(ThemeOf::<T> {
+				name: theme_name,
+				properties,
+				inherit: false,
+			})
+		}
+	}
+
+	fn query_theme_kv(
+		base_id: BaseId,
+		theme_name: &StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>
+	) -> Vec<ThemePropertyOf<T>> {
+		Themes::<T>::iter_prefix((base_id, theme_name.clone()))
+			.filter(|(key, _)| match &filter_keys {
+				Some (filter_keys) => filter_keys.contains(&key),
+				None => true
+			})
+			.map(|(key, value)| {
+				ThemeProperty {
+					key,
+					value,
+				}
+			})
+			.collect()
+	}
 }
 
 impl<T: Config> Base<
@@ -67,7 +113,7 @@ where
 				},
 			}
 		}
-		let base = BaseInfo { issuer, base_type, symbol, parts };
+		let base = BaseInfo { issuer, base_type, symbol };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}

@@ -8,13 +8,18 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
-use sp_std::convert::TryInto;
 
+use rmrk_types::{
+	PropertyInfo, NftChild, PhantomType,
+};
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, Resource, ResourceInfo, RoyaltyInfo
 };
-use sp_std::result::Result;
+use sp_std::{
+	result::Result,
+	vec::Vec,
+};
 
 mod functions;
 
@@ -24,16 +29,22 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub type CollectionInfoOf<T> = CollectionInfo<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<u8, <T as Config>::CollectionSymbolLimit>,
+	<T as frame_system::Config>::AccountId
+>;
+
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, R, P> = ResourceInfo::<
-	BoundedVec<u8, R>,
+pub type ResourceInfoOf<T> = ResourceInfo::<
+	BoundedVec<u8, <T as Config>::ResourceSymbolLimit>,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	BoundedVec<PartId, P>
-	>;
+	BoundedVec<PartId, <T as Config>::PartsLimit>
+>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
@@ -44,6 +55,11 @@ pub type BoundedResource<R> = BoundedVec<u8, R>;
 pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>;
 
 pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLimit>;
+
+pub type PropertyInfoOf<T> = PropertyInfo<
+	KeyLimitOf<T>,
+	ValueLimitOf<T>
+>;
 
 pub mod types;
 
@@ -137,7 +153,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>,
 		),
-		ResourceOf<T, T::ResourceSymbolLimit, T::PartsLimit>,
+		ResourceInfoOf<T>,
 		OptionQuery,
 	>;
 
@@ -153,6 +169,16 @@ pub mod pallet {
 		),
 		ValueLimitOf<T>,
 		OptionQuery,
+	>;
+
+	#[pallet::storage]
+	pub type DummyStorage<T: Config> = StorageValue<
+		_,
+		(
+			NftChild,
+			PhantomType<PropertyInfoOf<T>>
+		),
+		OptionQuery
 	>;
 
 	#[pallet::pallet]
