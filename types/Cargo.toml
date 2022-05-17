@@ -1,0 +1,24 @@
+[package]
+name = "rmrk-types"
+description = "Shared types"
+repository = "https://github.com/rmrk-team/rmrk-substrate"
+license = "Apache-2.0"
+version = "0.0.1"
+authors = ["RMRK Team"]
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ['x86_64-unknown-linux-gnu']
+
+[dependencies]
+serde = { version = "1.0.111", default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
+scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+
+[features]
+default = ["std"]
+std = [
+	"serde/std",
+	"codec/std",
+	"scale-info/std",
+]
