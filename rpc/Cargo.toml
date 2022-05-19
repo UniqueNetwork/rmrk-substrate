@@ -6,10 +6,10 @@ edition = "2021"
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-sp-core = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.20' }
-sp-std = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.20' }
-sp-api = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.20' }
-sp-runtime = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.20' }
+sp-core = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.21' }
+sp-std = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.21' }
+sp-api = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.21' }
+sp-runtime = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.21' }
 serde = { version = "1.0.130", default-features = false, features = ["derive"] }
 rmrk-types = { version = "0.0.1", default-features = false, path = "../types" }
 
