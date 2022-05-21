@@ -8,6 +8,7 @@ pub mod priority;
 pub mod property;
 pub mod resource;
 pub mod theme;
+pub mod phantom_type;
 mod serialize;
 
 pub use base::{Base, BaseInfo};
@@ -28,3 +29,4 @@ pub mod primitives {
 	pub type PartId = u32;
 	pub type ZIndex = u32;
 }
+pub use phantom_type::PhantomType;
