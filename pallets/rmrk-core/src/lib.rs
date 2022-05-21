@@ -13,7 +13,7 @@ use sp_std::convert::TryInto;
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, Resource, ResourceInfo, RoyaltyInfo,
-	ResourceTypes, BasicResource, SlotResource, ComposableResource
+	ResourceTypes, BasicResource, SlotResource, ComposableResource, NftChild, PropertyInfo, PhantomType
 };
 use sp_std::result::Result;
 
@@ -45,6 +45,11 @@ pub type BoundedResource<R> = BoundedVec<u8, R>;
 pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>;
 
 pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLimit>;
+
+pub type PropertyInfoOf<T> = PropertyInfo<
+	KeyLimitOf<T>,
+	ValueLimitOf<T>
+>;
 
 pub mod types;
 
@@ -167,6 +172,16 @@ pub mod pallet {
 	#[pallet::getter(fn lock)]
 	/// Lock for NFTs
 	pub type Lock<T: Config> = StorageMap<_, Twox64Concat, (CollectionId, NftId), bool, ValueQuery>;
+
+	#[pallet::storage]
+	pub type DummyStorage<T: Config> = StorageValue<
+		_,
+		(
+			NftChild,
+			PhantomType<PropertyInfoOf<T>>
+		),
+		OptionQuery
+	>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
