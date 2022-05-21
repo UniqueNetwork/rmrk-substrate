@@ -7,19 +7,29 @@ use sp_runtime::{DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, vec::Vec};
 use frame_support::pallet_prelude::MaxEncodedLen;
 
-use crate::primitives::*;
+use crate::{
+	primitives::*,
+	serialize,
+};
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(bound = "BoundedString: AsRef<[u8]>")
+)]
 pub struct BasicResource<BoundedString> {
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub src: Option<BoundedString>,
 
 	/// Reference to IPFS location of metadata
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub metadata: Option<BoundedString>,
 
 	/// Optional location or identier of license
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub license: Option<BoundedString>,
 
 	/// If the resource has the thumb property, this will be a URI to a thumbnail of the given
@@ -28,13 +38,24 @@ pub struct BasicResource<BoundedString> {
 	/// another bird, showing the full render of one bird inside the other's inventory might be a
 	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
 	/// image that is lighter and faster to load but representative of this resource.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub thumb: Option<BoundedString>,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(
+		bound = r#"
+			BoundedString: AsRef<[u8]>,
+			BoundedParts: AsRef<[PartId]>
+		"#
+	)
+)]
 pub struct ComposableResource<BoundedString, BoundedParts> {
 	/// If a resource is composed, it will have an array of parts that compose it
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub parts: BoundedParts,
 
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
@@ -44,9 +65,11 @@ pub struct ComposableResource<BoundedString, BoundedParts> {
 
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub src: Option<BoundedString>,
 
 	/// Reference to IPFS location of metadata
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub metadata: Option<BoundedString>,
 
 	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
@@ -55,6 +78,7 @@ pub struct ComposableResource<BoundedString, BoundedParts> {
 	/// compatible with the machine_gun_scope slot of base base-4477293-kanaria_superbird
 
 	/// Optional location or identier of license
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub license: Option<BoundedString>,
 
 	/// If the resource has the thumb property, this will be a URI to a thumbnail of the given
@@ -63,11 +87,16 @@ pub struct ComposableResource<BoundedString, BoundedParts> {
 	/// another bird, showing the full render of one bird inside the other's inventory might be a
 	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
 	/// image that is lighter and faster to load but representative of this resource.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub thumb: Option<BoundedString>,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(bound = "BoundedString: AsRef<[u8]>")
+)]
 pub struct SlotResource<BoundedString> {
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
@@ -76,9 +105,11 @@ pub struct SlotResource<BoundedString> {
 
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub src: Option<BoundedString>,
 
 	/// Reference to IPFS location of metadata
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub metadata: Option<BoundedString>,
 
 	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
@@ -89,6 +120,7 @@ pub struct SlotResource<BoundedString> {
 
 	/// The license field, if present, should contain a link to a license (IPFS or static HTTP
 	/// url), or an identifier, like RMRK_nocopy or ipfs://ipfs/someHashOfLicense.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub license: Option<BoundedString>,
 
 	/// If the resource has the thumb property, this will be a URI to a thumbnail of the given
@@ -97,11 +129,21 @@ pub struct SlotResource<BoundedString> {
 	/// another bird, showing the full render of one bird inside the other's inventory might be a
 	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
 	/// image that is lighter and faster to load but representative of this resource.
+	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
 	pub thumb: Option<BoundedString>,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(
+		bound = r#"
+			BoundedString: AsRef<[u8]>,
+			BoundedParts: AsRef<[PartId]>
+		"#
+	)
+)]
 pub enum ResourceTypes<BoundedString, BoundedParts> {
 	Basic(BasicResource<BoundedString>),
 	Composable(ComposableResource<BoundedString, BoundedParts>),
@@ -110,13 +152,24 @@ pub enum ResourceTypes<BoundedString, BoundedParts> {
 
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(
+		bound = r#"
+			BoundedResource: AsRef<[u8]>,
+			BoundedString: AsRef<[u8]>,
+			BoundedParts: AsRef<[PartId]>
+		"#
+	)
+)]
 pub struct ResourceInfo<BoundedResource, BoundedString, BoundedParts> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub id: BoundedResource,
-	
+
 	/// Resource
 	pub resource: ResourceTypes<BoundedString, BoundedParts>,
 
