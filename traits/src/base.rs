@@ -8,14 +8,13 @@ use super::{
 };
 use crate::{
 	primitives::{BaseId, ResourceId, SlotId},
-	serialize,
+	serialize, ThemeProperty,
 };
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
 use sp_std::vec::Vec;
-use frame_support::pallet_prelude::MaxEncodedLen;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
