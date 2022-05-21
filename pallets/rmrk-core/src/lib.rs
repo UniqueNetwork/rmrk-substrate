@@ -27,6 +27,7 @@ mod tests;
 
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
+	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
 pub type ResourceOf<T, R, P> = ResourceInfo<
