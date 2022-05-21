@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{
 	primitives::{BaseId, ResourceId, SlotId},
-	serialize,
+	serialize, ThemeProperty,
 };
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
@@ -73,6 +73,6 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, Boun
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedString>,
+		theme: Theme<BoundedString, Vec<ThemeProperty<BoundedString>>>,
 	) -> Result<(), DispatchError>;
 }
