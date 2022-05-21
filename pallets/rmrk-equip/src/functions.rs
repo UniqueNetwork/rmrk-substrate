@@ -369,7 +369,7 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		theme: ThemeOf<T>,
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
