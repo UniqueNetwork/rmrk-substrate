@@ -49,7 +49,7 @@ pub mod pallet {
 
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
-		type MaxCollectionsEquippablePerPart: Get<u32>;		
+		type MaxCollectionsEquippablePerPart: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -59,11 +59,9 @@ pub mod pallet {
 	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
 		StorageMap<
-		_, 
-		Twox64Concat, BaseId, 
-		BaseInfo<
-			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-			T::PartsLimit>>
+			_,
+			Twox64Concat, BaseId,
+			BaseInfo<T::AccountId, StringLimitOf<T>>
 		>;
 
 	#[pallet::storage]

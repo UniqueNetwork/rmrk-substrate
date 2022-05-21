@@ -65,7 +65,7 @@ where
 				},
 			}
 		}
-		let base = BaseInfo { issuer, base_type, symbol, parts };
+		let base = BaseInfo { issuer, base_type, symbol };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}
@@ -238,7 +238,7 @@ where
 				},
 				_ => (),
 			}
-			
+
 		}
 
 		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft
