@@ -18,7 +18,7 @@ pub use theme::{Theme, ThemeProperty};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, RoyaltyInfo};
 pub use priority::Priority;
-pub use property::Property;
+pub use property::{Property, PropertyInfo};
 pub use resource::{Resource, ResourceInfo, ResourceTypes, BasicResource, SlotResource, ComposableResource};
 pub mod primitives {
 	pub type CollectionId = u32;
