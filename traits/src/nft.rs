@@ -61,6 +61,13 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 	pub pending: bool,
 }
 
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize))]
+#[derive(Encode, Decode, TypeInfo, MaxEncodedLen)]
+pub struct NftChild {
+	pub collection_id: CollectionId,
+	pub nft_id: NftId
+}
+
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Nft<AccountId, BoundedString> {
