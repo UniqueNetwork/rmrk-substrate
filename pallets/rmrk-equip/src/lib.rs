@@ -87,13 +87,6 @@ pub mod pallet {
 		BaseInfo<
 			T::AccountId,
 			StringLimitOf<T>,
-			BoundedVec<
-				PartType<
-					StringLimitOf<T>,
-					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
-				>,
-				T::PartsLimit,
-			>,
 		>,
 	>;
 

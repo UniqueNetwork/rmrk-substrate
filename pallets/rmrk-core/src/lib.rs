@@ -41,7 +41,6 @@ pub type InstanceInfoOf<T> = NftInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
 pub type ResourceInfoOf<T> = ResourceInfo::<
-	BoundedVec<u8, <T as Config>::ResourceSymbolLimit>,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<PartId, <T as Config>::PartsLimit>
 >;
