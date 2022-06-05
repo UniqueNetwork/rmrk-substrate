@@ -688,7 +688,23 @@ async function findResourceById(
         }
     }
 
-    expect(resource !== null, 'Error: resource was not added').to.be.true;
+    return resource!;
+}
+
+async function getResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: number,
+): Promise<ResourceInfo> {
+    const resource = findResourceById(
+        api,
+        collectionId,
+        nftId,
+        resourceId,
+    );
+
+    expect(resource !== null, 'Error: resource was not found').to.be.true;
 
     return resource!;
 }
@@ -719,7 +735,7 @@ export async function acceptNftResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    const resource = await getResourceById(api, collectionId, nftId, resourceId);
     checkResourceStatus(resource!, "added");
 }
 
@@ -741,7 +757,7 @@ async function parseResourceId(
     expect(resourceResult.success, 'Error: Unable to add resource').to.be.true;
     const resourceId = resourceResult.successData!;
 
-    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    const resource = await getResourceById(api, collectionId, nftId, resourceId);
     checkResourceStatus(resource!, expectedStatus);
 
     return resourceId;
