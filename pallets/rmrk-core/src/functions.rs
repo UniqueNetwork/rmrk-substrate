@@ -515,9 +515,9 @@ where
 		// Get current owner, which we will use to remove the Children storage
 		if let Some(parent_account_id) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
 			// Decode the parent_account_id to extract the parent (CollectionId, NftId)
-			if let Some(parent) = 
+			if let Some(parent) =
 				Pallet::<T>::decode_nft_account_id::<T::AccountId>(parent_account_id) {
-					// Remove the parent-child Children storage 
+					// Remove the parent-child Children storage
 					Self::remove_child(parent, (collection_id, nft_id));
 			}
 		}
@@ -525,7 +525,7 @@ where
 		// Get NFT info
 		let mut rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		
+
 		Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
 		Ok((sender, collection_id, nft_id))
@@ -548,6 +548,13 @@ where
 	pub fn iterate_nft_children(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=NftChild> {
 		Children::<T>::iter_key_prefix((collection_id, nft_id))
 				.into_iter()
+				.filter(|(collection_id, nft_id)| {
+					let pending = <Nfts<T>>::get(collection_id, nft_id)
+						.map(|nft| nft.pending)
+						.unwrap_or(true);
+
+					!pending
+				})
 				.map(|(collection_id, nft_id)| NftChild {
 					collection_id,
 					nft_id
