@@ -451,14 +451,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			_max_burns: u32,
+			max_burns: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
-			let max_recursions = T::MaxRecursions::get();
-			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
+			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_burns)?;
 
 			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
 
@@ -577,13 +576,12 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			_max_burns: u32
+			max_burns: u32
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let max_recursions = T::MaxRecursions::get();
 			let (sender, collection_id, nft_id) =
-				Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
+				Self::nft_reject(sender, collection_id, nft_id, max_burns)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())
