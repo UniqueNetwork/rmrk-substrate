@@ -1100,7 +1100,6 @@ declare module '@polkadot/types/lookup' {
     readonly asRejectNft: {
       readonly collectionId: u32;
       readonly nftId: u32;
-      readonly maxBurns: u32;
     } & Struct;
     readonly isChangeCollectionIssuer: boolean;
     readonly asChangeCollectionIssuer: {

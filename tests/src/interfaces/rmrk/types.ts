@@ -538,7 +538,6 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asAddComposableResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
     readonly resource: RmrkTraitsResourceComposableResource;
   } & Struct;
   readonly isAddSlotResource: boolean;
@@ -1386,7 +1385,7 @@ export interface PalletUtilityEvent extends Enum {
 }
 
 /** @name PhantomTypeUpDataStructs */
-export interface PhantomTypeUpDataStructs extends Vec<Lookup173> {}
+export interface PhantomTypeUpDataStructs extends Vec<Lookup172> {}
 
 /** @name RmrkSubstrateRuntimeOriginCaller */
 export interface RmrkSubstrateRuntimeOriginCaller extends Enum {

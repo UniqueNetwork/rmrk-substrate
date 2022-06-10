@@ -1036,7 +1036,6 @@ export default {
       reject_nft: {
         collectionId: 'u32',
         nftId: 'u32',
-        maxBurns: 'u32',
       },
       change_collection_issuer: {
         collectionId: 'u32',
